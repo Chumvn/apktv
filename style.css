@@ -136,14 +136,7 @@ body {
   width: 44px;
   height: 44px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, var(--accent), #a78bfa);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 1.35rem;
-  color: #fff;
-  letter-spacing: -1px;
+  object-fit: cover;
   flex-shrink: 0;
 }
 
