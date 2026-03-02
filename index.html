@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="KHO APP CHUM – Kho ứng dụng Android TV thân thiện với điều khiển từ xa">
+  <meta name="theme-color" content="#0f1117">
+  <title>KHO APP CHUM</title>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <!-- TOP BAR -->
+  <header class="topbar" role="banner">
+    <div class="topbar__left">
+      <div class="topbar__logo" aria-hidden="true">K</div>
+      <h1 class="topbar__title">KHO APP CHUM</h1>
+    </div>
+    <div class="topbar__right">
+      <div class="search-wrap">
+        <label for="search-input" class="sr-only">Tìm kiếm ứng dụng</label>
+        <input id="search-input" class="search-input focusable" type="search" placeholder="Tìm kiếm..."
+          autocomplete="off" data-nav-group="topbar">
+      </div>
+      <button id="btn-refresh" class="topbar-btn focusable" aria-label="Làm mới dữ liệu" data-nav-group="topbar"
+        title="Làm mới">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 4v6h-6" />
+          <path d="M1 20v-6h6" />
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10" />
+          <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14" />
+        </svg>
+      </button>
+      <a id="btn-updates" class="topbar-btn focusable"
+        href="https://github.com/rupanh123-phap/928394040393939339393939949430038458575758933030202020202848485858585949400485858585859402.github.io/releases/tag/V1.0.0"
+        target="_blank" rel="noopener" aria-label="Xem cập nhật mới" data-nav-group="topbar" title="Cập nhật mới">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v10l4 2" />
+          <circle cx="12" cy="12" r="10" />
+        </svg>
+      </a>
+      <button id="btn-theme" class="topbar-btn focusable" aria-label="Chuyển giao diện sáng/tối" data-nav-group="topbar"
+        title="Đổi giao diện">
+        <svg class="icon-moon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+        <svg class="icon-sun" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- STATUS LINE -->
+  <div id="status-line" class="status-line" role="status" aria-live="polite"></div>
+
+  <!-- TABS -->
+  <nav class="tabs-bar" role="tablist" aria-label="Danh mục ứng dụng" id="tabs-bar"></nav>
+
+  <!-- MAIN CONTENT -->
+  <main id="main-content" class="main-content" role="main">
+    <!-- skeleton / cards injected here -->
+    <div id="skeleton" class="skeleton-grid" aria-busy="true" aria-label="Đang tải dữ liệu">
+      <div class="skeleton-card">
+        <div class="sk-icon"></div>
+        <div class="sk-line w80"></div>
+        <div class="sk-line w60"></div>
+        <div class="sk-line w40"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="sk-icon"></div>
+        <div class="sk-line w80"></div>
+        <div class="sk-line w60"></div>
+        <div class="sk-line w40"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="sk-icon"></div>
+        <div class="sk-line w80"></div>
+        <div class="sk-line w60"></div>
+        <div class="sk-line w40"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="sk-icon"></div>
+        <div class="sk-line w80"></div>
+        <div class="sk-line w60"></div>
+        <div class="sk-line w40"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="sk-icon"></div>
+        <div class="sk-line w80"></div>
+        <div class="sk-line w60"></div>
+        <div class="sk-line w40"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="sk-icon"></div>
+        <div class="sk-line w80"></div>
+        <div class="sk-line w60"></div>
+        <div class="sk-line w40"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="sk-icon"></div>
+        <div class="sk-line w80"></div>
+        <div class="sk-line w60"></div>
+        <div class="sk-line w40"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="sk-icon"></div>
+        <div class="sk-line w80"></div>
+        <div class="sk-line w60"></div>
+        <div class="sk-line w40"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="sk-icon"></div>
+        <div class="sk-line w80"></div>
+        <div class="sk-line w60"></div>
+        <div class="sk-line w40"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="sk-icon"></div>
+        <div class="sk-line w80"></div>
+        <div class="sk-line w60"></div>
+        <div class="sk-line w40"></div>
+      </div>
+    </div>
+    <div id="cards-grid" class="cards-grid" role="grid" aria-label="Danh sách ứng dụng"></div>
+    <div id="empty-state" class="empty-state" hidden>
+      <p class="empty-state__text">Không tìm thấy ứng dụng nào.</p>
+    </div>
+    <div id="error-state" class="error-state" hidden>
+      <p class="error-state__text" id="error-msg">Lỗi tải dữ liệu.</p>
+      <button id="btn-retry" class="btn-primary focusable" data-nav-group="error">Thử lại</button>
+    </div>
+  </main>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast" role="alert" aria-live="assertive" hidden></div>
+
+  <script src="./app.js"></script>
+</body>
+
+</html>
