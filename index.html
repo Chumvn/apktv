@@ -139,18 +139,18 @@
         <div class="sk-line w40"></div>
       </div>
     </div>
-    <div id="cards-grid" class="cards-grid" role="grid" aria-label="Danh sách ứng dụng"></div>
-    <div id="empty-state" class="empty-state" hidden>
+    <div id="cards-grid" class="cards-grid" role="grid" aria-label="Danh sách ứng dụng" style="display:none"></div>
+    <div id="empty-state" class="empty-state" style="display:none">
       <p class="empty-state__text">Không tìm thấy ứng dụng nào.</p>
     </div>
-    <div id="error-state" class="error-state" hidden>
+    <div id="error-state" class="error-state" style="display:none">
       <p class="error-state__text" id="error-msg">Lỗi tải dữ liệu.</p>
       <button id="btn-retry" class="btn-primary focusable" data-nav-group="error">Thử lại</button>
     </div>
   </main>
 
   <!-- TOAST -->
-  <div id="toast" class="toast" role="alert" aria-live="assertive" hidden></div>
+  <div id="toast" class="toast" role="alert" aria-live="assertive" style="display:none"></div>
 
   <script src="./app.js"></script>
 </body>

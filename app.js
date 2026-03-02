@@ -12,27 +12,27 @@
   var TAB_ALL = 'MỚI NHẤT';
 
   /* ---------- DOM REFERENCES ---------- */
-  var $searchInput  = document.getElementById('search-input');
-  var $btnRefresh   = document.getElementById('btn-refresh');
-  var $btnTheme     = document.getElementById('btn-theme');
-  var $statusLine   = document.getElementById('status-line');
-  var $tabsBar      = document.getElementById('tabs-bar');
-  var $skeleton     = document.getElementById('skeleton');
-  var $cardsGrid    = document.getElementById('cards-grid');
-  var $emptyState   = document.getElementById('empty-state');
-  var $errorState   = document.getElementById('error-state');
-  var $btnRetry     = document.getElementById('btn-retry');
-  var $toast        = document.getElementById('toast');
+  var $searchInput = document.getElementById('search-input');
+  var $btnRefresh = document.getElementById('btn-refresh');
+  var $btnTheme = document.getElementById('btn-theme');
+  var $statusLine = document.getElementById('status-line');
+  var $tabsBar = document.getElementById('tabs-bar');
+  var $skeleton = document.getElementById('skeleton');
+  var $cardsGrid = document.getElementById('cards-grid');
+  var $emptyState = document.getElementById('empty-state');
+  var $errorState = document.getElementById('error-state');
+  var $btnRetry = document.getElementById('btn-retry');
+  var $toast = document.getElementById('toast');
 
   /* ---------- STATE ---------- */
-  var rawData       = [];          // original JSON
-  var flatItems     = [];          // flattened items (all)
-  var categories    = [];          // category names
-  var activeTab     = TAB_ALL;
-  var searchQuery   = '';
+  var rawData = [];          // original JSON
+  var flatItems = [];          // flattened items (all)
+  var categories = [];          // category names
+  var activeTab = TAB_ALL;
+  var searchQuery = '';
   var filteredItems = [];
-  var toastTimer    = null;
-  var refreshTimer  = null;
+  var toastTimer = null;
+  var refreshTimer = null;
   var focusedCardId = null;        // track focused card across re-renders
 
   /* ---------- THEME ---------- */
@@ -61,7 +61,7 @@
 
   function showToast(msg) {
     $toast.textContent = msg;
-    $toast.hidden = false;
+    $toast.style.display = '';
     $toast.classList.add('show');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(dismissToast, TOAST_DURATION);
@@ -70,23 +70,23 @@
   function dismissToast() {
     $toast.classList.remove('show');
     clearTimeout(toastTimer);
-    setTimeout(function () { $toast.hidden = true; }, 300);
+    setTimeout(function () { $toast.style.display = 'none'; }, 300);
   }
 
   function timeStr() {
     var d = new Date();
     return d.getHours().toString().padStart(2, '0') + ':' +
-           d.getMinutes().toString().padStart(2, '0') + ':' +
-           d.getSeconds().toString().padStart(2, '0');
+      d.getMinutes().toString().padStart(2, '0') + ':' +
+      d.getSeconds().toString().padStart(2, '0');
   }
 
   /* ---------- FETCH DATA ---------- */
   function fetchData(isAutoRefresh) {
     if (!isAutoRefresh) {
-      $skeleton.hidden = false;
-      $cardsGrid.hidden = true;
-      $emptyState.hidden = true;
-      $errorState.hidden = true;
+      $skeleton.style.display = '';
+      $cardsGrid.style.display = 'none';
+      $emptyState.style.display = 'none';
+      $errorState.style.display = 'none';
       setStatus('Đang tải dữ liệu...');
     }
 
@@ -144,17 +144,17 @@
       buildTabs();
     }
     applyFilters(isAutoRefresh);
-    $skeleton.hidden = true;
-    $cardsGrid.hidden = false;
-    $errorState.hidden = true;
+    $skeleton.style.display = 'none';
+    $cardsGrid.style.display = '';
+    $errorState.style.display = 'none';
     setStatus('Cập nhật lúc ' + timeStr() + ' • ' + flatItems.length + ' ứng dụng');
   }
 
   function showError(msg) {
-    $skeleton.hidden = true;
-    $cardsGrid.hidden = true;
-    $emptyState.hidden = true;
-    $errorState.hidden = false;
+    $skeleton.style.display = 'none';
+    $cardsGrid.style.display = 'none';
+    $emptyState.style.display = 'none';
+    $errorState.style.display = '';
     document.getElementById('error-msg').textContent = 'Lỗi: ' + msg;
     setStatus('Lỗi tải dữ liệu');
   }
@@ -195,9 +195,9 @@
       var q = searchQuery.toLowerCase();
       items = items.filter(function (it) {
         return (it.name && it.name.toLowerCase().indexOf(q) !== -1) ||
-               (it.desc && it.desc.toLowerCase().indexOf(q) !== -1) ||
-               (it._category && it._category.toLowerCase().indexOf(q) !== -1) ||
-               (it.developer && it.developer.toLowerCase().indexOf(q) !== -1);
+          (it.desc && it.desc.toLowerCase().indexOf(q) !== -1) ||
+          (it._category && it._category.toLowerCase().indexOf(q) !== -1) ||
+          (it.developer && it.developer.toLowerCase().indexOf(q) !== -1);
       });
     }
 
@@ -241,7 +241,7 @@
           ph.className = 'app-card__icon-placeholder';
           ph.textContent = (this.parentNode && this.parentNode.parentNode) ?
             (this.parentNode.parentNode.querySelector('.app-card__name') || {}).textContent ?
-            (this.parentNode.parentNode.querySelector('.app-card__name').textContent || '?')[0] : '?' : '?';
+              (this.parentNode.parentNode.querySelector('.app-card__name').textContent || '?')[0] : '?' : '?';
           this.parentNode.replaceChild(ph, this);
         };
         header.appendChild(img);
@@ -311,9 +311,9 @@
     $cardsGrid.appendChild(frag);
 
     if (filteredItems.length === 0) {
-      $emptyState.hidden = false;
+      $emptyState.style.display = '';
     } else {
-      $emptyState.hidden = true;
+      $emptyState.style.display = 'none';
     }
 
     // roving tabindex: first card or restored card
