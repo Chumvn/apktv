@@ -1,6 +1,6 @@
 {
   "name": "KHO APP CHUM",
-  "short_name": "KhoApp",
+  "short_name": "ChumApp",
   "description": "Kho ứng dụng Android TV thân thiện với điều khiển từ xa",
   "start_url": "./",
   "display": "standalone",
@@ -10,4 +10,5 @@
   "categories": ["utilities"],
   "icons": []
 }
+
 
