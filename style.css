@@ -228,22 +228,15 @@ a {
 /* ---------- TABS ---------- */
 .tabs-bar {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 6px;
   padding: 8px 16px;
-  overflow-x: auto;
-  overflow-y: hidden;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
-  -ms-overflow-style: none;
-  scrollbar-width: none;
   position: sticky;
   top: var(--topbar-h);
   z-index: 90;
-  -webkit-overflow-scrolling: touch;
-}
-
-.tabs-bar::-webkit-scrollbar {
-  display: none
 }
 
 .tab-btn {
