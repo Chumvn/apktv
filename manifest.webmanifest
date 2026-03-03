@@ -2,7 +2,7 @@
   "name": "KHO APP CHUM",
   "short_name": "KhoApp",
   "description": "Kho ứng dụng Android TV thân thiện với điều khiển từ xa",
-  "start_url": "./index.html",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#0f1117",
   "theme_color": "#0f1117",
@@ -10,3 +10,4 @@
   "categories": ["utilities"],
   "icons": []
 }
+
