@@ -5,7 +5,7 @@
   'use strict';
 
   /* ---------- CONSTANTS ---------- */
-  var DATA_URL = 'https://raw.githubusercontent.com/rupanh123-phap/928394040393939339393939949430038458575758933030202020202848485858585949400485858585859402.github.io/refs/heads/main/data.json';
+  var DATA_URL = './data.json';
   var FETCH_TIMEOUT = 8000;
   var REFRESH_INTERVAL = 60000;
   var TOAST_DURATION = 2800;

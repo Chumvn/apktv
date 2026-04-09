@@ -1,0 +1,402 @@
+[
+  {
+    "category": "YouTube / SmartTube",
+    "items": [
+      {
+        "name": "SmartTube Beta 100",
+        "desc": "SmartTube — Cobalt build, beta 100",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/cobalt.smarttube.beta100.apk"
+      },
+      {
+        "name": "YouTube TV Cobalt 100",
+        "desc": "YouTube TV — Cobalt build v100",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/cobalt.youtube.tv100.apk"
+      },
+      {
+        "name": "YouTube TV Cobalt 106",
+        "desc": "YouTube TV — Cobalt build v106",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/cobalt.youtube.tv106.apk"
+      },
+      {
+        "name": "YouTube TV Cobalt 107",
+        "desc": "YouTube TV — Cobalt build v107",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/cobalt.youtube.tv107.apk"
+      },
+      {
+        "name": "Cobalt 106",
+        "desc": "Cobalt browser v106",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/cobalt106.apk"
+      },
+      {
+        "name": "Cobalt 107",
+        "desc": "Cobalt browser v107",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/cobalt107.apk"
+      }
+    ]
+  },
+  {
+    "category": "Xem phim / TV",
+    "items": [
+      {
+        "name": "HDo TV",
+        "desc": "HDo TV v2.1.4 — Xem phim HD",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/hdotv-2.1.4.apk"
+      },
+      {
+        "name": "HieuGa TV",
+        "desc": "HieuGa — Xem phim, TV show",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/hieuga.apk"
+      },
+      {
+        "name": "Rạp Phim TV",
+        "desc": "Rạp Phim TV — Phim Việt Nam",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/rapphimtv.apk"
+      },
+      {
+        "name": "Dailymotion",
+        "desc": "Dailymotion — Video streaming",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/dailymotion.apk"
+      },
+      {
+        "name": "NVC TV",
+        "desc": "NVC — Xem TV trực tuyến",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/nvc.apk"
+      },
+      {
+        "name": "SparkleTV",
+        "desc": "SparkleTV — Xem kênh truyền hình",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/SparkleTV.apk"
+      },
+      {
+        "name": "VLC Media Player",
+        "desc": "VLC — Trình phát đa phương tiện",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/vlc.apk"
+      },
+      {
+        "name": "KiKi Player",
+        "desc": "KiKi — Trình phát media (xapk)",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/kiki.xapk"
+      }
+    ]
+  },
+  {
+    "category": "IPTV",
+    "items": [
+      {
+        "name": "IPTV PRO",
+        "desc": "IPTV PRO — Xem IPTV chuyên nghiệp",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/IPTV_PRO.apk"
+      },
+      {
+        "name": "TiviMate Premium",
+        "desc": "TiviMate v2.1.5 Premium — IPTV Player",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/TiviMate_2.1.5_Premium.apk"
+      },
+      {
+        "name": "TiviMate",
+        "desc": "TiviMate — IPTV Player",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/tivimate.apk"
+      },
+      {
+        "name": "Televizo",
+        "desc": "Televizo — IPTV player by phaptx52022",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/Televizo_byphaptx52022.apk"
+      },
+      {
+        "name": "OTT Navigator",
+        "desc": "OTT Navigator v1.7.3.2 — IPTV/OTT Player",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/OTT_Navigator_v1.7.3.2.apk"
+      },
+      {
+        "name": "Live Channels",
+        "desc": "Live Channels — Xem kênh truyền hình trực tiếp",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/Live%2BChannels.apk"
+      }
+    ]
+  },
+  {
+    "category": "Launcher",
+    "items": [
+      {
+        "name": "ATV Launcher",
+        "desc": "ATV Launcher — Launcher cho Android TV",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/atvlauncher.apk"
+      },
+      {
+        "name": "Google TV Home",
+        "desc": "Google TV Home v1.0.499253741",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/Google_TV_Home_1.0.499253741.apk"
+      },
+      {
+        "name": "HomeTV Launcher",
+        "desc": "HomeTV Launcher v6.3.11",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/HomeTV_Launcher_6.3.11.apk"
+      },
+      {
+        "name": "Projectivy Launcher",
+        "desc": "Projectivy Launcher — Launcher tùy biến",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/ProjectivyLauncher.apk"
+      },
+      {
+        "name": "Projectivy Launcher v4.64",
+        "desc": "Projectivy Launcher v4.64",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/Projectivy_Launcher_v4.64.apk"
+      },
+      {
+        "name": "LM ATV Mod",
+        "desc": "LM ATV v1.0.4 Mod — Launcher mod",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/LM_ATV_-1.0.4_mod.apk"
+      },
+      {
+        "name": "LM FireTV",
+        "desc": "LM FireTV v118 — Launcher cho Fire TV",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/LM_FireTV_118.apk"
+      },
+      {
+        "name": "AppDrawer",
+        "desc": "AppDrawer — Ngăn kéo ứng dụng",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/AppDrawer.apk"
+      },
+      {
+        "name": "AppDrawer Dark",
+        "desc": "AppDrawer by PremiumSeven (Dark)",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/AppDrawer_by_PremiumSeven__Dark_.apk"
+      },
+      {
+        "name": "TV AppsDrawer",
+        "desc": "ATV App — TV AppsDrawer",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/_ATV_app__TV_AppsDrawer.apk"
+      }
+    ]
+  },
+  {
+    "category": "File Manager",
+    "items": [
+      {
+        "name": "ES File Explorer Premium v4.4.3.2",
+        "desc": "ES File Explorer Premium v4.4.3.2 Mod",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/ES-File-Explorer-Premium-v4.4.3.2-Mod.apk"
+      },
+      {
+        "name": "ES File Explorer v4.2.2.5",
+        "desc": "ES File Explorer Premium v4.2.2.5",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/ES_File_Explorer_File_Manager_Premium_v4.2.2.5.apk"
+      },
+      {
+        "name": "File Manager Premium v3.7",
+        "desc": "File Manager Premium v3.7",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/File_Manager_-Premium-v3.7.apk"
+      },
+      {
+        "name": "File Manager v2.7.3",
+        "desc": "File Manager v2.7.3",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/File_Manager_v2.7.3.apk"
+      },
+      {
+        "name": "MiXplorer Silver v6.70.3",
+        "desc": "MiXplorer Silver v6.70.3",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/MiXplorer-Silver-6.70.3.apk"
+      },
+      {
+        "name": "MiXplorer Silver v6.69.2 Mod",
+        "desc": "MiXplorer v6.69.2 Silver Mod",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/MiXplorer-v6.69.2-Silver_b25122550-Mod.apk"
+      },
+      {
+        "name": "X-plore File Manager v4.19.10",
+        "desc": "X-plore File Manager v4.19.10 Donate",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/X-plore_File_Manager_v4.19.10__Donate_.apk"
+      },
+      {
+        "name": "RS File Manager",
+        "desc": "RS File Manager — Quản lý tệp",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/rsfile.apk"
+      },
+      {
+        "name": "Total Commander v3.62d",
+        "desc": "Total Commander v3.62d (arm-v7a)",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/TotalCmd_3.62d-v7a.apk"
+      }
+    ]
+  },
+  {
+    "category": "App Store",
+    "items": [
+      {
+        "name": "Aptoide TV",
+        "desc": "Aptoide TV — Kho ứng dụng cho TV",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/aptoidetv.apk"
+      },
+      {
+        "name": "APK Mirror",
+        "desc": "APK Mirror — Tải APK an toàn",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/apkmirro.apk"
+      },
+      {
+        "name": "APK Uploader",
+        "desc": "APK Uploader — Cài đặt APK",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/apkup.apk"
+      },
+      {
+        "name": "Bao Store",
+        "desc": "Bao Store — Kho ứng dụng Việt",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/baostore.apk"
+      },
+      {
+        "name": "DL Store",
+        "desc": "DL Store — Cửa hàng ứng dụng",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/DLStore.apk"
+      },
+      {
+        "name": "Emotn Store",
+        "desc": "Emotn Store — App store cho TV Box",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/emotnstore.apk"
+      },
+      {
+        "name": "HD Play Store",
+        "desc": "HD Play Store — Kho ứng dụng HD",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/hdplaystore.apk"
+      },
+      {
+        "name": "M Store",
+        "desc": "M Store — Cửa hàng ứng dụng",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/mstore.apk"
+      },
+      {
+        "name": "TTV Store",
+        "desc": "TTV Store — Kho ứng dụng TV",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/ttvstore.apk"
+      }
+    ]
+  },
+  {
+    "category": "Tiện ích",
+    "items": [
+      {
+        "name": "1Tap Cleaner Pro v5.08",
+        "desc": "1Tap Cleaner Pro v5.08 — Dọn dẹp bộ nhớ",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/1Tap_Cleaner_Pro_v5.08.apk"
+      },
+      {
+        "name": "atvTools Mod",
+        "desc": "atvTools v1.2.0 Mod — Công cụ ATV",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/atvTools_1.2.0_mod.apk"
+      },
+      {
+        "name": "Button Mapper v3.22",
+        "desc": "Button Mapper v3.22 — Tùy chỉnh phím",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/Button_Mapper_v3.22_322_.apk"
+      },
+      {
+        "name": "Buttons Remapper Premium v1.24.1",
+        "desc": "Buttons Remapper v1.24.1 Premium",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/Buttons_remapper_v1.24.1__PREMIUM_.apk"
+      },
+      {
+        "name": "tvQuickActions Pro v3.6.0",
+        "desc": "tvQuickActions Pro v3.6.0 Patched",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/tvQuickActions_Pro_v3.6.0__Patched_.apk"
+      },
+      {
+        "name": "tvQuickActions v2.6.3",
+        "desc": "tvQuickActions v2.6.3 Patched",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/tvQuickActions_v2.6.3_Patched.apk"
+      },
+      {
+        "name": "Set Orientation",
+        "desc": "Set Orientation — Cài đặt xoay màn hình",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/Set_Orientation.apk"
+      },
+      {
+        "name": "Set Orientation Mod",
+        "desc": "Set Orientation Mod",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/Set_Orientation_mod.apk"
+      },
+      {
+        "name": "Set Orientation (No Icon)",
+        "desc": "Set Orientation — Không hiện icon",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/Set_Orientation_no_icon.apk"
+      },
+      {
+        "name": "Ferrari Downloader",
+        "desc": "Ferrari Downloader — Trình tải xuống",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/ferraridownloader.apk"
+      },
+      {
+        "name": "SAI (Split APK Installer)",
+        "desc": "SAI — Cài đặt APK phân tách",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/sai.apk"
+      },
+      {
+        "name": "NTP",
+        "desc": "NTP — Đồng bộ thời gian",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/ntp.apk"
+      },
+      {
+        "name": "Reboot to CoreELEC",
+        "desc": "Reboot to CoreELEC v5.0",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/Reboot_to_CoreELEC_5.0.apk"
+      },
+      {
+        "name": "TV App",
+        "desc": "TV — Ứng dụng TV cơ bản",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/TV.apk"
+      },
+      {
+        "name": "4.6.0",
+        "desc": "Ứng dụng bổ sung v4.6.0",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/4.6.0.apk"
+      }
+    ]
+  },
+  {
+    "category": "ADB / Remote",
+    "items": [
+      {
+        "name": "ADB TV v1.12",
+        "desc": "ADB TV v1.12 — Điều khiển qua ADB",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/adbtv-v1.12.apk"
+      },
+      {
+        "name": "Remote ADB v5.0",
+        "desc": "Remote ADB v5.0 — ADB từ xa",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/Remote_ADB_5.0.apk"
+      },
+      {
+        "name": "Remote ATV v6.0.3",
+        "desc": "Remote ATV v6.0.3 No Ads — Điều khiển từ xa",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/Remote_ATV__No_Ads__6.0.3.apk"
+      },
+      {
+        "name": "SendFilesToTV v1.4.22",
+        "desc": "Send Files To TV v1.4.22 — Gửi file qua TV",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/SendFilesToTV-1.4.22.apk"
+      }
+    ]
+  },
+  {
+    "category": "Voice / Input",
+    "items": [
+      {
+        "name": "Super Voice",
+        "desc": "Super Voice — Tìm kiếm bằng giọng nói",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/supervoice.apk"
+      },
+      {
+        "name": "Super Voice Mod ATV14",
+        "desc": "Super Voice Mod — Cho Android TV 14",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/supervoice-mod-ATV14.apk"
+      },
+      {
+        "name": "Super Voice v2.2",
+        "desc": "Super Voice v2.2 — Phiên bản mới",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/supperVoice-2.2.apk"
+      },
+      {
+        "name": "Map Voice",
+        "desc": "Map Voice — Điều khiển bằng giọng nói",
+        "apk_url": "https://github.com/Chumvn/apktv/releases/download/V1.0/mapvoice.apk"
+      }
+    ]
+  }
+]
