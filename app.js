@@ -1,5 +1,6 @@
 /* ============================================================
-   app.js — KHO APP CHUM — Mobile-friendly App Catalog
+   app.js — CHUM APP — Mobile-friendly App Catalog
+   Auto-detect APKs from GitHub Releases + Random Zodiac Icons
    ============================================================ */
 (function () {
   'use strict';
@@ -11,80 +12,116 @@
   var TOAST_DURATION = 2800;
   var TAB_ALL = 'MỚI NHẤT';
 
-  /* ---------- APP CATALOG ---------- */
-  var APP_CATALOG = {
-    'cobalt.smarttube.beta100': { name: 'SmartTube Beta 100', desc: 'SmartTube — Cobalt build, beta 100', cat: 'YouTube / SmartTube' },
-    'cobalt.youtube.tv100': { name: 'YouTube TV Cobalt 100', desc: 'YouTube TV — Cobalt build v100', cat: 'YouTube / SmartTube' },
-    'cobalt.youtube.tv106': { name: 'YouTube TV Cobalt 106', desc: 'YouTube TV — Cobalt build v106', cat: 'YouTube / SmartTube' },
-    'cobalt.youtube.tv107': { name: 'YouTube TV Cobalt 107', desc: 'YouTube TV — Cobalt build v107', cat: 'YouTube / SmartTube' },
-    'cobalt106': { name: 'Cobalt 106', desc: 'Cobalt browser v106', cat: 'YouTube / SmartTube' },
-    'cobalt107': { name: 'Cobalt 107', desc: 'Cobalt browser v107', cat: 'YouTube / SmartTube' },
-    'hdotv-2.1.4': { name: 'HDo TV', desc: 'HDo TV v2.1.4 — Xem phim HD', cat: 'Xem phim / TV' },
-    'hieuga': { name: 'HieuGa TV', desc: 'HieuGa — Xem phim, TV show', cat: 'Xem phim / TV' },
-    'rapphimtv': { name: 'Rạp Phim TV', desc: 'Rạp Phim TV — Phim Việt Nam', cat: 'Xem phim / TV' },
-    'dailymotion': { name: 'Dailymotion', desc: 'Dailymotion — Video streaming', cat: 'Xem phim / TV' },
-    'nvc': { name: 'NVC TV', desc: 'NVC — Xem TV trực tuyến', cat: 'Xem phim / TV' },
-    'SparkleTV': { name: 'SparkleTV', desc: 'SparkleTV — Xem kênh truyền hình', cat: 'Xem phim / TV' },
-    'vlc': { name: 'VLC Media Player', desc: 'VLC — Trình phát đa phương tiện', cat: 'Xem phim / TV' },
-    'kiki': { name: 'KiKi Player', desc: 'KiKi — Trình phát media', cat: 'Xem phim / TV' },
-    'IPTV_PRO': { name: 'IPTV PRO', desc: 'IPTV PRO — Xem IPTV chuyên nghiệp', cat: 'IPTV' },
-    'TiviMate_2.1.5_Premium': { name: 'TiviMate Premium', desc: 'TiviMate v2.1.5 Premium — IPTV Player', cat: 'IPTV' },
-    'tivimate': { name: 'TiviMate', desc: 'TiviMate — IPTV Player', cat: 'IPTV' },
-    'Televizo_byphaptx52022': { name: 'Televizo', desc: 'Televizo — IPTV player', cat: 'IPTV' },
-    'OTT_Navigator_v1.7.3.2': { name: 'OTT Navigator', desc: 'OTT Navigator v1.7.3.2 — IPTV/OTT Player', cat: 'IPTV' },
-    'Live+Channels': { name: 'Live Channels', desc: 'Live Channels — Kênh truyền hình trực tiếp', cat: 'IPTV' },
-    'atvlauncher': { name: 'ATV Launcher', desc: 'ATV Launcher — Launcher cho Android TV', cat: 'Launcher' },
-    'Google_TV_Home_1.0.499253741': { name: 'Google TV Home', desc: 'Google TV Home v1.0', cat: 'Launcher' },
-    'HomeTV_Launcher_6.3.11': { name: 'HomeTV Launcher', desc: 'HomeTV Launcher v6.3.11', cat: 'Launcher' },
-    'ProjectivyLauncher': { name: 'Projectivy Launcher', desc: 'Projectivy Launcher — Tùy biến', cat: 'Launcher' },
-    'Projectivy_Launcher_v4.64': { name: 'Projectivy Launcher v4.64', desc: 'Projectivy Launcher v4.64', cat: 'Launcher' },
-    'LM_ATV_-1.0.4_mod': { name: 'LM ATV Mod', desc: 'LM ATV v1.0.4 Mod', cat: 'Launcher' },
-    'LM_FireTV_118': { name: 'LM FireTV', desc: 'LM FireTV v118 — Launcher cho Fire TV', cat: 'Launcher' },
-    'AppDrawer': { name: 'AppDrawer', desc: 'AppDrawer — Ngăn kéo ứng dụng', cat: 'Launcher' },
-    'AppDrawer_by_PremiumSeven__Dark_': { name: 'AppDrawer Dark', desc: 'AppDrawer by PremiumSeven (Dark)', cat: 'Launcher' },
-    '_ATV_app__TV_AppsDrawer': { name: 'TV AppsDrawer', desc: 'ATV App — TV AppsDrawer', cat: 'Launcher' },
-    'ES-File-Explorer-Premium-v4.4.3.2-Mod': { name: 'ES File Explorer v4.4.3.2', desc: 'ES File Explorer Premium Mod', cat: 'File Manager' },
-    'ES_File_Explorer_File_Manager_Premium_v4.2.2.5': { name: 'ES File Explorer v4.2.2.5', desc: 'ES File Explorer Premium', cat: 'File Manager' },
-    'File_Manager_-Premium-v3.7': { name: 'File Manager Premium v3.7', desc: 'File Manager Premium v3.7', cat: 'File Manager' },
-    'File_Manager_v2.7.3': { name: 'File Manager v2.7.3', desc: 'File Manager v2.7.3', cat: 'File Manager' },
-    'MiXplorer-Silver-6.70.3': { name: 'MiXplorer Silver v6.70.3', desc: 'MiXplorer Silver v6.70.3', cat: 'File Manager' },
-    'MiXplorer-v6.69.2-Silver_b25122550-Mod': { name: 'MiXplorer Silver Mod', desc: 'MiXplorer v6.69.2 Silver Mod', cat: 'File Manager' },
-    'X-plore_File_Manager_v4.19.10__Donate_': { name: 'X-plore v4.19.10', desc: 'X-plore File Manager Donate', cat: 'File Manager' },
-    'rsfile': { name: 'RS File Manager', desc: 'RS File Manager — Quản lý tệp', cat: 'File Manager' },
-    'TotalCmd_3.62d-v7a': { name: 'Total Commander v3.62d', desc: 'Total Commander (arm-v7a)', cat: 'File Manager' },
-    'aptoidetv': { name: 'Aptoide TV', desc: 'Aptoide TV — Kho ứng dụng cho TV', cat: 'App Store' },
-    'apkmirro': { name: 'APK Mirror', desc: 'APK Mirror — Tải APK an toàn', cat: 'App Store' },
-    'apkup': { name: 'APK Uploader', desc: 'APK Uploader — Cài đặt APK', cat: 'App Store' },
-    'baostore': { name: 'Bao Store', desc: 'Bao Store — Kho ứng dụng Việt', cat: 'App Store' },
-    'DLStore': { name: 'DL Store', desc: 'DL Store — Cửa hàng ứng dụng', cat: 'App Store' },
-    'emotnstore': { name: 'Emotn Store', desc: 'Emotn Store — App store cho TV Box', cat: 'App Store' },
-    'hdplaystore': { name: 'HD Play Store', desc: 'HD Play Store — Kho ứng dụng HD', cat: 'App Store' },
-    'mstore': { name: 'M Store', desc: 'M Store — Cửa hàng ứng dụng', cat: 'App Store' },
-    'ttvstore': { name: 'TTV Store', desc: 'TTV Store — Kho ứng dụng TV', cat: 'App Store' },
-    '1Tap_Cleaner_Pro_v5.08': { name: '1Tap Cleaner Pro', desc: '1Tap Cleaner Pro v5.08 — Dọn dẹp', cat: 'Tiện ích' },
-    'atvTools_1.2.0_mod': { name: 'atvTools Mod', desc: 'atvTools v1.2.0 Mod', cat: 'Tiện ích' },
-    'Button_Mapper_v3.22_322_': { name: 'Button Mapper', desc: 'Button Mapper v3.22 — Tùy chỉnh phím', cat: 'Tiện ích' },
-    'Buttons_remapper_v1.24.1__PREMIUM_': { name: 'Buttons Remapper', desc: 'Buttons Remapper v1.24.1 Premium', cat: 'Tiện ích' },
-    'tvQuickActions_Pro_v3.6.0__Patched_': { name: 'tvQuickActions Pro', desc: 'tvQuickActions Pro v3.6.0 Patched', cat: 'Tiện ích' },
-    'tvQuickActions_v2.6.3_Patched': { name: 'tvQuickActions', desc: 'tvQuickActions v2.6.3 Patched', cat: 'Tiện ích' },
-    'Set_Orientation': { name: 'Set Orientation', desc: 'Set Orientation — Xoay màn hình', cat: 'Tiện ích' },
-    'Set_Orientation_mod': { name: 'Set Orientation Mod', desc: 'Set Orientation Mod', cat: 'Tiện ích' },
-    'Set_Orientation_no_icon': { name: 'Set Orientation (No Icon)', desc: 'Set Orientation — Không icon', cat: 'Tiện ích' },
-    'ferraridownloader': { name: 'Ferrari Downloader', desc: 'Ferrari Downloader — Trình tải xuống', cat: 'Tiện ích' },
-    'sai': { name: 'SAI', desc: 'SAI — Cài đặt APK phân tách', cat: 'Tiện ích' },
-    'ntp': { name: 'NTP', desc: 'NTP — Đồng bộ thời gian', cat: 'Tiện ích' },
-    'Reboot_to_CoreELEC_5.0': { name: 'Reboot to CoreELEC', desc: 'Reboot to CoreELEC v5.0', cat: 'Tiện ích' },
-    'TV': { name: 'TV App', desc: 'TV — Ứng dụng TV cơ bản', cat: 'Tiện ích' },
-    'SendFilesToTV-1.4.22': { name: 'SendFilesToTV', desc: 'Send Files To TV v1.4.22', cat: 'Tiện ích' },
-    '4.6.0': { name: 'Ứng dụng v4.6.0', desc: 'Ứng dụng bổ sung v4.6.0', cat: 'Tiện ích' },
-    'adbtv-v1.12': { name: 'ADB TV v1.12', desc: 'ADB TV v1.12 — Điều khiển qua ADB', cat: 'ADB / Remote' },
-    'Remote_ADB_5.0': { name: 'Remote ADB v5.0', desc: 'Remote ADB v5.0 — ADB từ xa', cat: 'ADB / Remote' },
-    'Remote_ATV__No_Ads__6.0.3': { name: 'Remote ATV', desc: 'Remote ATV v6.0.3 No Ads', cat: 'ADB / Remote' },
-    'supervoice': { name: 'Super Voice', desc: 'Super Voice — Giọng nói', cat: 'Voice / Input' },
-    'supervoice-mod-ATV14': { name: 'Super Voice Mod ATV14', desc: 'Super Voice Mod — Android TV 14', cat: 'Voice / Input' },
-    'supperVoice-2.2': { name: 'Super Voice v2.2', desc: 'Super Voice v2.2', cat: 'Voice / Input' },
-    'mapvoice': { name: 'Map Voice', desc: 'Map Voice — Điều khiển giọng nói', cat: 'Voice / Input' }
-  };
+  /* ---------- 12 CON GIÁP (ZODIAC ANIMALS) ---------- */
+  var ZODIAC_ANIMALS = [
+    { emoji: '🐀', name: 'Tý (Chuột)', color: '#6366f1' },
+    { emoji: '🐂', name: 'Sửu (Trâu)', color: '#8b5cf6' },
+    { emoji: '🐅', name: 'Dần (Hổ)', color: '#f59e0b' },
+    { emoji: '🐇', name: 'Mão (Mèo)', color: '#ec4899' },
+    { emoji: '🐉', name: 'Thìn (Rồng)', color: '#ef4444' },
+    { emoji: '🐍', name: 'Tỵ (Rắn)', color: '#10b981' },
+    { emoji: '🐴', name: 'Ngọ (Ngựa)', color: '#f97316' },
+    { emoji: '🐏', name: 'Mùi (Dê)', color: '#14b8a6' },
+    { emoji: '🐒', name: 'Thân (Khỉ)', color: '#a855f7' },
+    { emoji: '🐓', name: 'Dậu (Gà)', color: '#eab308' },
+    { emoji: '🐕', name: 'Tuất (Chó)', color: '#3b82f6' },
+    { emoji: '🐖', name: 'Hợi (Lợn)', color: '#e11d48' }
+  ];
+
+  /* ---------- CATEGORY KEYWORDS for auto-classification ---------- */
+  var CATEGORY_RULES = [
+    {
+      cat: 'YouTube / SmartTube',
+      keywords: ['smarttube', 'youtube', 'cobalt']
+    },
+    {
+      cat: 'Xem phim / TV',
+      keywords: ['hdotv', 'hieuga', 'rapphim', 'dailymotion', 'nvc', 'sparkle', 'vlc', 'kiki', 'phim', 'movie', 'cinema', 'film', 'video', 'media', 'player']
+    },
+    {
+      cat: 'IPTV',
+      keywords: ['iptv', 'tivimate', 'televizo', 'ott', 'navigator', 'live+channels', 'livechannel', 'live_channel']
+    },
+    {
+      cat: 'Launcher',
+      keywords: ['launcher', 'hometv', 'projectivy', 'appdrawer', 'appsdrawer', 'lm_atv', 'lm_firetv', 'googletv', 'google_tv']
+    },
+    {
+      cat: 'File Manager',
+      keywords: ['file', 'explorer', 'manager', 'mixplorer', 'x-plore', 'xplore', 'totalcmd', 'total_commander', 'rsfile']
+    },
+    {
+      cat: 'App Store',
+      keywords: ['aptoide', 'apkmirro', 'apkup', 'baostore', 'dlstore', 'emotn', 'hdplaystore', 'mstore', 'ttvstore', 'store']
+    },
+    {
+      cat: 'ADB / Remote',
+      keywords: ['adb', 'remote', 'sendfiles']
+    },
+    {
+      cat: 'Voice / Input',
+      keywords: ['voice', 'supervoice', 'mapvoice', 'keyboard', 'input']
+    },
+    {
+      cat: 'Tiện ích',
+      keywords: ['cleaner', 'atvtools', 'button', 'mapper', 'remapper', 'quickaction', 'orientation', 'ferrari', 'downloader', 'sai', 'ntp', 'reboot', 'coreelec', 'tool']
+    }
+  ];
+
+  /* ---------- SMART NAME FORMATTING ---------- */
+  function formatAppName(baseName) {
+    // Clean up common patterns
+    var name = baseName
+      .replace(/[-_]+/g, ' ')   // replace dashes/underscores with spaces
+      .replace(/\s+/g, ' ')     // collapse multiple spaces
+      .trim();
+
+    // Capitalize first letter of each word
+    name = name.replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+
+    // Clean up version-like patterns for readability
+    name = name
+      .replace(/\bV(\d)/gi, 'v$1')        // normalize "V1" to "v1"
+      .replace(/\bMod\b/gi, 'Mod')
+      .replace(/\bPremium\b/gi, 'Premium')
+      .replace(/\bPro\b/gi, 'Pro')
+      .replace(/\bPatched\b/gi, 'Patched')
+      .replace(/\bDonate\b/gi, 'Donate')
+      .replace(/\bBeta\b/gi, 'Beta')
+      .replace(/\bSilver\b/gi, 'Silver');
+
+    return name;
+  }
+
+  /* ---------- HASH-BASED ZODIAC ASSIGNMENT ---------- */
+  function hashString(str) {
+    var hash = 0;
+    for (var i = 0; i < str.length; i++) {
+      var char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash);
+  }
+
+  function getZodiacForApp(appName) {
+    var index = hashString(appName) % ZODIAC_ANIMALS.length;
+    return ZODIAC_ANIMALS[index];
+  }
+
+  /* ---------- AUTO-CLASSIFY CATEGORY ---------- */
+  function classifyApp(fileName) {
+    var lower = fileName.toLowerCase();
+    for (var i = 0; i < CATEGORY_RULES.length; i++) {
+      var rule = CATEGORY_RULES[i];
+      for (var k = 0; k < rule.keywords.length; k++) {
+        if (lower.indexOf(rule.keywords[k]) !== -1) {
+          return rule.cat;
+        }
+      }
+    }
+    return 'Khác';
+  }
 
   /* ---------- DOM REFERENCES ---------- */
   var $searchInput = document.getElementById('search-input');
@@ -147,7 +184,7 @@
       d.getSeconds().toString().padStart(2, '0');
   }
 
-  /* ---------- TRANSFORM GITHUB ASSETS → CATEGORIZED DATA ---------- */
+  /* ---------- TRANSFORM GITHUB ASSETS → AUTO-CATEGORIZED DATA ---------- */
   function transformAssets(assets) {
     var catMap = {};
     var catOrder = ['YouTube / SmartTube', 'Xem phim / TV', 'IPTV', 'Launcher', 'File Manager', 'App Store', 'Tiện ích', 'ADB / Remote', 'Voice / Input', 'Khác'];
@@ -155,17 +192,23 @@
     for (var i = 0; i < assets.length; i++) {
       var asset = assets[i];
       var fileName = asset.name || '';
+      
+      // Only process APK/XAPK files
+      if (!/\.(apk|xapk)$/i.test(fileName)) continue;
+
       var baseName = fileName.replace(/\.(apk|xapk)$/i, '');
-      var info = APP_CATALOG[baseName];
-      var catName = info ? info.cat : 'Khác';
-      var appName = info ? info.name : baseName.replace(/[_-]/g, ' ');
-      var appDesc = info ? info.desc : fileName;
+      var catName = classifyApp(baseName);
+      var appName = formatAppName(baseName);
+      var zodiac = getZodiacForApp(baseName);
 
       if (!catMap[catName]) catMap[catName] = [];
       catMap[catName].push({
         name: appName,
-        desc: appDesc,
-        apk_url: asset.browser_download_url
+        desc: fileName + ' — ' + zodiac.name,
+        apk_url: asset.browser_download_url,
+        zodiac: zodiac,
+        size: asset.size,
+        updated_at: asset.updated_at
       });
     }
 
@@ -182,6 +225,14 @@
       }
     }
     return result;
+  }
+
+  /* ---------- FORMAT FILE SIZE ---------- */
+  function formatSize(bytes) {
+    if (!bytes) return '';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
   }
 
   /* ---------- FETCH DATA ---------- */
@@ -207,6 +258,9 @@
       .then(function (release) {
         var categorized = transformAssets(release.assets || []);
         processData(categorized, isAutoRefresh);
+        if (!isAutoRefresh) {
+          showToast('✅ Đã tải ' + (release.assets || []).length + ' ứng dụng');
+        }
       })
       .catch(function (err) {
         clearTimeout(timer);
@@ -238,7 +292,7 @@
     $skeleton.style.display = 'none';
     $cardsGrid.style.display = '';
     $errorState.style.display = 'none';
-    setStatus('Cập nhật lúc ' + timeStr() + ' • ' + flatItems.length + ' ứng dụng');
+    setStatus('🔄 Cập nhật lúc ' + timeStr() + ' • ' + flatItems.length + ' ứng dụng • Tự động phân loại');
   }
 
   function showError(msg) {
@@ -286,8 +340,7 @@
       items = items.filter(function (it) {
         return (it.name && it.name.toLowerCase().indexOf(q) !== -1) ||
           (it.desc && it.desc.toLowerCase().indexOf(q) !== -1) ||
-          (it._category && it._category.toLowerCase().indexOf(q) !== -1) ||
-          (it.developer && it.developer.toLowerCase().indexOf(q) !== -1);
+          (it._category && it._category.toLowerCase().indexOf(q) !== -1);
       });
     }
 
@@ -329,7 +382,7 @@
       var titleWrap = document.createElement('div');
       titleWrap.className = 'category-title';
       var titleH3 = document.createElement('h3');
-      titleH3.textContent = catName;
+      titleH3.textContent = catName + ' (' + catItems.length + ')';
       titleWrap.appendChild(titleH3);
       section.appendChild(titleWrap);
 
@@ -357,29 +410,17 @@
     card.rel = 'noopener';
     card.setAttribute('tabindex', '0');
 
-    // Icon
+    // Zodiac Icon
     var iconWrap = document.createElement('div');
     iconWrap.className = 'app-card__icon-wrap';
 
-    if (it.icon) {
-      var img = document.createElement('img');
-      img.className = 'app-card__icon';
-      img.setAttribute('loading', 'lazy');
-      img.setAttribute('alt', it.name || '');
-      img.src = it.icon;
-      img.onerror = function () {
-        var ph = document.createElement('div');
-        ph.className = 'app-card__icon-placeholder';
-        ph.textContent = (it.name || '?')[0].toUpperCase();
-        this.parentNode.replaceChild(ph, this);
-      };
-      iconWrap.appendChild(img);
-    } else {
-      var ph2 = document.createElement('div');
-      ph2.className = 'app-card__icon-placeholder';
-      ph2.textContent = (it.name || '?')[0].toUpperCase();
-      iconWrap.appendChild(ph2);
-    }
+    var zodiac = it.zodiac || getZodiacForApp(it.name || 'app');
+    var zodiacEl = document.createElement('div');
+    zodiacEl.className = 'app-card__icon-zodiac';
+    zodiacEl.style.background = 'linear-gradient(135deg, ' + zodiac.color + ', ' + adjustColor(zodiac.color, 30) + ')';
+    zodiacEl.innerHTML = '<span class="zodiac-emoji">' + zodiac.emoji + '</span>';
+    iconWrap.appendChild(zodiacEl);
+
     card.appendChild(iconWrap);
 
     // Info
@@ -398,18 +439,26 @@
       info.appendChild(desc);
     }
 
-    if (it.developer || it.installs) {
-      var meta = document.createElement('div');
-      meta.className = 'app-card__meta';
-      var parts = [];
-      if (it.developer) parts.push(it.developer);
-      if (it.installs) parts.push(it.installs);
-      meta.textContent = parts.join(' • ');
-      info.appendChild(meta);
-    }
+    // Size + zodiac meta
+    var meta = document.createElement('div');
+    meta.className = 'app-card__meta';
+    var parts = [];
+    if (it.size) parts.push(formatSize(it.size));
+    parts.push(zodiac.emoji + ' ' + zodiac.name);
+    meta.textContent = parts.join(' • ');
+    info.appendChild(meta);
 
     card.appendChild(info);
     return card;
+  }
+
+  /* ---------- COLOR HELPER ---------- */
+  function adjustColor(hex, amount) {
+    var num = parseInt(hex.replace('#', ''), 16);
+    var r = Math.min(255, (num >> 16) + amount);
+    var g = Math.min(255, ((num >> 8) & 0x00FF) + amount);
+    var b = Math.min(255, (num & 0x0000FF) + amount);
+    return '#' + (0x1000000 + (r << 16) + (g << 8) + b).toString(16).slice(1);
   }
 
   function selectTab(category) {
@@ -442,7 +491,10 @@
   });
 
   // Buttons
-  $btnRefresh.addEventListener('click', function () { fetchData(false); });
+  $btnRefresh.addEventListener('click', function () {
+    showToast('🔄 Đang làm mới...');
+    fetchData(false);
+  });
   $btnTheme.addEventListener('click', toggleTheme);
   $btnRetry.addEventListener('click', function () { fetchData(false); });
 

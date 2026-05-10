@@ -1,14 +1,12 @@
 {
-  "name": "KHO APP CHUM",
+  "name": "CHUM APP",
   "short_name": "ChumApp",
-  "description": "Kho ứng dụng Android TV thân thiện với điều khiển từ xa",
+  "description": "CHUM APP — Kho ứng dụng Android TV & Mobile tự động cập nhật",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#0f1117",
-  "theme_color": "#0f1117",
+  "theme_color": "#f97316",
   "orientation": "landscape",
   "categories": ["utilities"],
   "icons": []
 }
-
-
