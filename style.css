@@ -1,6 +1,6 @@
 /* ============================================================
-   style.css — CHUM APP — Mobile-friendly App Catalog
-   Zodiac-themed icons + Orange brand identity
+   style.css — CHUM APP — Mobile + Android TV responsive
+   Random emoji icons + Bold initials + Orange brand
    ============================================================ */
 
 /* ---------- RESET & VARIABLES ---------- */
@@ -90,7 +90,7 @@ a {
   border: 0
 }
 
-/* ---------- FOCUS SYSTEM ---------- */
+/* ---------- FOCUS SYSTEM (Android TV D-pad friendly) ---------- */
 .focusable:focus {
   outline: 3px solid var(--focus-ring);
   outline-offset: 2px;
@@ -147,6 +147,7 @@ a {
   color: #f97316;
   text-shadow: 0 0 20px rgba(249, 115, 22, 0.4);
   position: relative;
+  animation: logoPulse 3s ease-in-out infinite;
 }
 
 .logo-app {
@@ -157,14 +158,9 @@ a {
   opacity: 0.85;
 }
 
-/* Animated glow pulse on logo */
 @keyframes logoPulse {
   0%, 100% { text-shadow: 0 0 20px rgba(249, 115, 22, 0.4); }
   50% { text-shadow: 0 0 30px rgba(249, 115, 22, 0.7), 0 0 60px rgba(249, 115, 22, 0.2); }
-}
-
-.logo-chum {
-  animation: logoPulse 3s ease-in-out infinite;
 }
 
 [data-theme="light"] .logo-chum {
@@ -180,13 +176,6 @@ a {
 @keyframes logoPulseLight {
   0%, 100% { text-shadow: 0 0 15px rgba(234, 88, 12, 0.3); }
   50% { text-shadow: 0 0 25px rgba(234, 88, 12, 0.5), 0 0 50px rgba(234, 88, 12, 0.15); }
-}
-
-.topbar__title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: .3px;
-  white-space: nowrap;
 }
 
 .topbar__right {
@@ -252,14 +241,9 @@ a {
   height: 18px;
 }
 
-/* Theme toggle icon visibility */
-[data-theme="dark"] .icon-sun {
-  display: none
-}
-
-[data-theme="light"] .icon-moon {
-  display: none
-}
+/* Theme toggle */
+[data-theme="dark"] .icon-sun { display: none }
+[data-theme="light"] .icon-moon { display: none }
 
 /* ---------- STATUS LINE ---------- */
 .status-line {
@@ -300,9 +284,7 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 
-.tab-btn:hover {
-  opacity: 1;
-}
+.tab-btn:hover { opacity: 1; }
 
 .tab-btn[aria-selected="true"] {
   opacity: 1;
@@ -310,46 +292,18 @@ a {
   transform: scale(1.05);
 }
 
-/* Per-tab colors — warm/orange palette */
-.tab-btn:nth-child(1) {
-  background: #f97316
-}
-
-.tab-btn:nth-child(2) {
-  background: #e85d75
-}
-
-.tab-btn:nth-child(3) {
-  background: #2ecc71
-}
-
-.tab-btn:nth-child(4) {
-  background: #e67e22
-}
-
-.tab-btn:nth-child(5) {
-  background: #3498db
-}
-
-.tab-btn:nth-child(6) {
-  background: #9b59b6
-}
-
-.tab-btn:nth-child(7) {
-  background: #1abc9c
-}
-
-.tab-btn:nth-child(8) {
-  background: #e74c3c
-}
-
-.tab-btn:nth-child(9) {
-  background: #8b5cf6
-}
-
-.tab-btn:nth-child(n+10) {
-  background: #34495e
-}
+/* Per-tab colors */
+.tab-btn:nth-child(1)  { background: #f97316 }
+.tab-btn:nth-child(2)  { background: #e85d75 }
+.tab-btn:nth-child(3)  { background: #2ecc71 }
+.tab-btn:nth-child(4)  { background: #e67e22 }
+.tab-btn:nth-child(5)  { background: #3498db }
+.tab-btn:nth-child(6)  { background: #9b59b6 }
+.tab-btn:nth-child(7)  { background: #1abc9c }
+.tab-btn:nth-child(8)  { background: #e74c3c }
+.tab-btn:nth-child(9)  { background: #8b5cf6 }
+.tab-btn:nth-child(10) { background: #0ea5e9 }
+.tab-btn:nth-child(n+11) { background: #34495e }
 
 /* ---------- MAIN / CONTENT ---------- */
 .main-content {
@@ -412,19 +366,14 @@ a {
 .app-card::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background: linear-gradient(135deg, var(--accent-glow), transparent);
   opacity: 0;
   transition: opacity var(--transition);
   pointer-events: none;
 }
 
-.app-card:hover::before {
-  opacity: 1;
-}
+.app-card:hover::before { opacity: 1; }
 
 .app-card:hover,
 .app-card:active {
@@ -434,39 +383,14 @@ a {
   box-shadow: 0 6px 24px rgba(249, 115, 22, .15);
 }
 
-.app-card:active {
-  transform: scale(0.98);
-}
+.app-card:active { transform: scale(0.98); }
 
 .app-card__icon-wrap {
   flex-shrink: 0;
 }
 
-.app-card__icon {
-  width: 64px;
-  height: 64px;
-  border-radius: var(--radius-sm);
-  object-fit: cover;
-  background: var(--surface);
-  display: block;
-}
-
-.app-card__icon-placeholder {
-  width: 64px;
-  height: 64px;
-  border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, var(--accent), #a78bfa);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-weight: 800;
-  font-size: 1.3rem;
-  flex-shrink: 0;
-}
-
-/* Zodiac Icon Style */
-.app-card__icon-zodiac {
+/* ---------- NEW ICON BOX: Bold initials + emoji ---------- */
+.app-card__icon-box {
   width: 64px;
   height: 64px;
   border-radius: var(--radius-sm);
@@ -476,23 +400,34 @@ a {
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
   transition: transform var(--transition);
 }
 
-.app-card:hover .app-card__icon-zodiac {
-  transform: scale(1.08) rotate(-3deg);
+.app-card:hover .app-card__icon-box {
+  transform: scale(1.06) rotate(-2deg);
 }
 
-.zodiac-emoji {
-  font-size: 2rem;
+/* Emoji: small, top-right corner decoration */
+.icon-emoji {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  font-size: .85rem;
   line-height: 1;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,.3));
-  transition: transform 0.3s ease;
+  opacity: 0.7;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.3));
 }
 
-.app-card:hover .zodiac-emoji {
-  transform: scale(1.15);
+/* Bold initials: large, center */
+.icon-initials {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, .3);
+  letter-spacing: 1px;
+  line-height: 1;
+  z-index: 1;
 }
 
 .app-card__info {
@@ -518,8 +453,8 @@ a {
   color: var(--text-dim);
   line-height: 1.4;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -567,28 +502,13 @@ a {
   animation: skPulse 1.4s ease-in-out .2s infinite;
 }
 
-.sk-line.w80 {
-  width: 80%
-}
-
-.sk-line.w60 {
-  width: 60%
-}
-
-.sk-line.w40 {
-  width: 40%
-}
+.sk-line.w80 { width: 80% }
+.sk-line.w60 { width: 60% }
+.sk-line.w40 { width: 40% }
 
 @keyframes skPulse {
-
-  0%,
-  100% {
-    opacity: .45
-  }
-
-  50% {
-    opacity: .85
-  }
+  0%, 100% { opacity: .45 }
+  50% { opacity: .85 }
 }
 
 /* ---------- EMPTY / ERROR STATE ---------- */
@@ -652,18 +572,49 @@ a {
   pointer-events: auto;
 }
 
-/* ---------- RESPONSIVE ---------- */
+/* ==========================================================
+   RESPONSIVE: Android TV (landscape 1920px) → Tablet → Mobile
+   ========================================================== */
 
-/* Tablet */
+/* ---- Android TV / Large Screen (> 1200px) ---- */
+@media (min-width: 1200px) {
+  .category-grid,
+  .skeleton-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .app-card {
+    padding: 12px;
+    gap: 14px;
+  }
+
+  .app-card__icon-box {
+    width: 72px;
+    height: 72px;
+  }
+
+  .icon-initials {
+    font-size: 1.6rem;
+  }
+
+  .icon-emoji {
+    font-size: .95rem;
+  }
+
+  .app-card__name {
+    font-size: 1rem;
+  }
+}
+
+/* ---- Tablet (769px ~ 1080px) ---- */
 @media (max-width: 1080px) {
-
   .category-grid,
   .skeleton-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-/* Mobile landscape / small tablet */
+/* ---- Mobile landscape / small tablet (< 768px) ---- */
 @media (max-width: 768px) {
   .topbar {
     padding: 0 12px;
@@ -717,15 +668,17 @@ a {
     gap: 10px;
   }
 
-  .app-card__icon,
-  .app-card__icon-placeholder,
-  .app-card__icon-zodiac {
+  .app-card__icon-box {
     width: 56px;
     height: 56px;
   }
 
-  .zodiac-emoji {
-    font-size: 1.6rem;
+  .icon-initials {
+    font-size: 1.2rem;
+  }
+
+  .icon-emoji {
+    font-size: .75rem;
   }
 
   .app-card__name {
@@ -734,12 +687,10 @@ a {
 
   .app-card__desc {
     font-size: .74rem;
-    -webkit-line-clamp: 1;
-    line-clamp: 1;
   }
 }
 
-/* Mobile portrait */
+/* ---- Mobile portrait (< 480px) ---- */
 @media (max-width: 480px) {
   .topbar {
     padding: 0 10px;
@@ -810,16 +761,18 @@ a {
     border-radius: 10px;
   }
 
-  .app-card__icon,
-  .app-card__icon-placeholder,
-  .app-card__icon-zodiac {
+  .app-card__icon-box {
     width: 60px;
     height: 60px;
     border-radius: 8px;
   }
 
-  .zodiac-emoji {
-    font-size: 1.8rem;
+  .icon-initials {
+    font-size: 1.3rem;
+  }
+
+  .icon-emoji {
+    font-size: .8rem;
   }
 
   .app-card__name {
@@ -844,19 +797,7 @@ a {
 }
 
 /* ---------- SCROLLBAR ---------- */
-::-webkit-scrollbar {
-  width: 5px
-}
-
-::-webkit-scrollbar-track {
-  background: var(--bg)
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-dim)
-}
+::-webkit-scrollbar { width: 5px }
+::-webkit-scrollbar-track { background: var(--bg) }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim) }

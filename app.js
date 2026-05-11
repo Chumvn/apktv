@@ -1,6 +1,6 @@
 /* ============================================================
    app.js — CHUM APP — Mobile-friendly App Catalog
-   Auto-detect APKs from GitHub Releases + Random Zodiac Icons
+   Auto-detect APKs from GitHub Releases + Random Emoji Icons
    ============================================================ */
 (function () {
   'use strict';
@@ -12,20 +12,29 @@
   var TOAST_DURATION = 2800;
   var TAB_ALL = 'MỚI NHẤT';
 
-  /* ---------- 12 CON GIÁP (ZODIAC ANIMALS) ---------- */
-  var ZODIAC_ANIMALS = [
-    { emoji: '🐀', name: 'Tý (Chuột)', color: '#6366f1' },
-    { emoji: '🐂', name: 'Sửu (Trâu)', color: '#8b5cf6' },
-    { emoji: '🐅', name: 'Dần (Hổ)', color: '#f59e0b' },
-    { emoji: '🐇', name: 'Mão (Mèo)', color: '#ec4899' },
-    { emoji: '🐉', name: 'Thìn (Rồng)', color: '#ef4444' },
-    { emoji: '🐍', name: 'Tỵ (Rắn)', color: '#10b981' },
-    { emoji: '🐴', name: 'Ngọ (Ngựa)', color: '#f97316' },
-    { emoji: '🐏', name: 'Mùi (Dê)', color: '#14b8a6' },
-    { emoji: '🐒', name: 'Thân (Khỉ)', color: '#a855f7' },
-    { emoji: '🐓', name: 'Dậu (Gà)', color: '#eab308' },
-    { emoji: '🐕', name: 'Tuất (Chó)', color: '#3b82f6' },
-    { emoji: '🐖', name: 'Hợi (Lợn)', color: '#e11d48' }
+  /* ---------- RANDOM EMOJI POOL (all kinds, not just zodiac) ---------- */
+  var EMOJI_POOL = [
+    '🎮', '🎯', '🎪', '🎨', '🎭', '🎬', '🎸', '🎵', '🎹', '🎺',
+    '🏆', '🏅', '🏈', '🏀', '⚽', '🏐', '🏓', '🏸', '🥊', '🏋️',
+    '🚀', '🛸', '🌟', '⭐', '💫', '🌈', '🔥', '💎', '🎩', '👑',
+    '🦁', '🐯', '🐻', '🦊', '🐺', '🦅', '🦋', '🐲', '🦄', '🐬',
+    '🌸', '🌺', '🍀', '🌿', '🌙', '☀️', '⚡', '❄️', '🌊', '🍁',
+    '🎃', '🎄', '🎁', '🎈', '🎉', '🎊', '🧊', '💡', '🔮', '🧲',
+    '🗡️', '🛡️', '⚙️', '🔧', '🔑', '🏠', '🏰', '🗼', '🎡', '🎢',
+    '📱', '💻', '🖥️', '🎥', '📷', '📡', '🔭', '🧬', '🧪', '⚗️',
+    '🍕', '🍔', '🍟', '🌮', '🍩', '🍦', '🎂', '🍪', '🥤', '☕',
+    '🐀', '🐂', '🐅', '🐇', '🐉', '🐍', '🐴', '🐏', '🐒', '🐓', '🐕', '🐖'
+  ];
+
+  /* ---------- GRADIENT COLOR PAIRS ---------- */
+  var COLOR_PAIRS = [
+    ['#6366f1', '#8b5cf6'], ['#ec4899', '#f472b6'], ['#ef4444', '#f87171'],
+    ['#f59e0b', '#fbbf24'], ['#10b981', '#34d399'], ['#3b82f6', '#60a5fa'],
+    ['#8b5cf6', '#a78bfa'], ['#f97316', '#fb923c'], ['#14b8a6', '#2dd4bf'],
+    ['#e11d48', '#fb7185'], ['#6d28d9', '#7c3aed'], ['#0891b2', '#22d3ee'],
+    ['#059669', '#10b981'], ['#d946ef', '#e879f9'], ['#0ea5e9', '#38bdf8'],
+    ['#7c3aed', '#a78bfa'], ['#dc2626', '#f87171'], ['#ca8a04', '#eab308'],
+    ['#2563eb', '#3b82f6'], ['#9333ea', '#a855f7']
   ];
 
   /* ---------- CATEGORY KEYWORDS for auto-classification ---------- */
@@ -70,18 +79,13 @@
 
   /* ---------- SMART NAME FORMATTING ---------- */
   function formatAppName(baseName) {
-    // Clean up common patterns
     var name = baseName
-      .replace(/[-_]+/g, ' ')   // replace dashes/underscores with spaces
-      .replace(/\s+/g, ' ')     // collapse multiple spaces
+      .replace(/[-_]+/g, ' ')
+      .replace(/\s+/g, ' ')
       .trim();
-
-    // Capitalize first letter of each word
     name = name.replace(/\b\w/g, function (c) { return c.toUpperCase(); });
-
-    // Clean up version-like patterns for readability
     name = name
-      .replace(/\bV(\d)/gi, 'v$1')        // normalize "V1" to "v1"
+      .replace(/\bV(\d)/gi, 'v$1')
       .replace(/\bMod\b/gi, 'Mod')
       .replace(/\bPremium\b/gi, 'Premium')
       .replace(/\bPro\b/gi, 'Pro')
@@ -89,24 +93,40 @@
       .replace(/\bDonate\b/gi, 'Donate')
       .replace(/\bBeta\b/gi, 'Beta')
       .replace(/\bSilver\b/gi, 'Silver');
-
     return name;
   }
 
-  /* ---------- HASH-BASED ZODIAC ASSIGNMENT ---------- */
+  /* ---------- GET APP INITIALS (bold text on icon) ---------- */
+  function getAppInitials(appName) {
+    if (!appName) return '?';
+    // Try to get initials from words (max 2-3 chars)
+    var words = appName.replace(/[^a-zA-Z0-9\s]/g, '').trim().split(/\s+/);
+    if (words.length >= 2) {
+      return (words[0][0] + words[1][0]).toUpperCase();
+    }
+    // Single word: take first 2 characters
+    return appName.substring(0, 2).toUpperCase();
+  }
+
+  /* ---------- HASH-BASED RANDOM ASSIGNMENT ---------- */
   function hashString(str) {
     var hash = 0;
     for (var i = 0; i < str.length; i++) {
       var char = str.charCodeAt(i);
       hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32bit integer
+      hash = hash & hash;
     }
     return Math.abs(hash);
   }
 
-  function getZodiacForApp(appName) {
-    var index = hashString(appName) % ZODIAC_ANIMALS.length;
-    return ZODIAC_ANIMALS[index];
+  function getRandomEmoji(appName) {
+    var index = hashString(appName) % EMOJI_POOL.length;
+    return EMOJI_POOL[index];
+  }
+
+  function getRandomColors(appName) {
+    var index = hashString(appName + '_color') % COLOR_PAIRS.length;
+    return COLOR_PAIRS[index];
   }
 
   /* ---------- AUTO-CLASSIFY CATEGORY ---------- */
@@ -184,6 +204,26 @@
       d.getSeconds().toString().padStart(2, '0');
   }
 
+  /* ---------- FORMAT FILE SIZE ---------- */
+  function formatSize(bytes) {
+    if (!bytes) return '';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+  }
+
+  /* ---------- FORMAT DATE ---------- */
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    var d = new Date(dateStr);
+    var day = d.getDate().toString().padStart(2, '0');
+    var month = (d.getMonth() + 1).toString().padStart(2, '0');
+    var year = d.getFullYear();
+    var hours = d.getHours().toString().padStart(2, '0');
+    var mins = d.getMinutes().toString().padStart(2, '0');
+    return day + '/' + month + '/' + year + ' ' + hours + ':' + mins;
+  }
+
   /* ---------- TRANSFORM GITHUB ASSETS → AUTO-CATEGORIZED DATA ---------- */
   function transformAssets(assets) {
     var catMap = {};
@@ -192,21 +232,19 @@
     for (var i = 0; i < assets.length; i++) {
       var asset = assets[i];
       var fileName = asset.name || '';
-      
+
       // Only process APK/XAPK files
       if (!/\.(apk|xapk)$/i.test(fileName)) continue;
 
       var baseName = fileName.replace(/\.(apk|xapk)$/i, '');
       var catName = classifyApp(baseName);
       var appName = formatAppName(baseName);
-      var zodiac = getZodiacForApp(baseName);
 
       if (!catMap[catName]) catMap[catName] = [];
       catMap[catName].push({
         name: appName,
-        desc: fileName + ' — ' + zodiac.name,
+        desc: fileName,
         apk_url: asset.browser_download_url,
-        zodiac: zodiac,
         size: asset.size,
         updated_at: asset.updated_at
       });
@@ -218,21 +256,12 @@
         result.push({ category: catOrder[c], items: catMap[catOrder[c]] });
       }
     }
-    // Add any remaining categories not in catOrder
     for (var key in catMap) {
       if (catOrder.indexOf(key) === -1) {
         result.push({ category: key, items: catMap[key] });
       }
     }
     return result;
-  }
-
-  /* ---------- FORMAT FILE SIZE ---------- */
-  function formatSize(bytes) {
-    if (!bytes) return '';
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / 1048576).toFixed(1) + ' MB';
   }
 
   /* ---------- FETCH DATA ---------- */
@@ -292,7 +321,7 @@
     $skeleton.style.display = 'none';
     $cardsGrid.style.display = '';
     $errorState.style.display = 'none';
-    setStatus('🔄 Cập nhật lúc ' + timeStr() + ' • ' + flatItems.length + ' ứng dụng • Tự động phân loại');
+    setStatus('🔄 Cập nhật lúc ' + timeStr() + ' • ' + flatItems.length + ' ứng dụng');
   }
 
   function showError(msg) {
@@ -327,10 +356,17 @@
 
   /* ---------- FILTER / RENDER ---------- */
   function applyFilters() {
-    var items = flatItems;
+    var items = flatItems.slice(); // copy
 
-    // category filter
-    if (activeTab !== TAB_ALL) {
+    // For "MỚI NHẤT" tab: sort by updated_at descending (latest first), no grouping
+    if (activeTab === TAB_ALL) {
+      items.sort(function (a, b) {
+        var dateA = a.updated_at ? new Date(a.updated_at).getTime() : 0;
+        var dateB = b.updated_at ? new Date(b.updated_at).getTime() : 0;
+        return dateB - dateA;
+      });
+    } else {
+      // category filter
       items = items.filter(function (it) { return it._category === activeTab; });
     }
 
@@ -344,7 +380,46 @@
       });
     }
 
-    renderCategorySections(items);
+    if (activeTab === TAB_ALL) {
+      renderFlatList(items);
+    } else {
+      renderCategorySections(items);
+    }
+  }
+
+  /* ---------- RENDER FLAT LIST (for "MỚI NHẤT" tab, sorted by date) ---------- */
+  function renderFlatList(items) {
+    $cardsGrid.innerHTML = '';
+
+    if (items.length === 0) {
+      $emptyState.style.display = '';
+      return;
+    }
+    $emptyState.style.display = 'none';
+
+    var frag = document.createDocumentFragment();
+
+    // Single section with title
+    var section = document.createElement('div');
+    section.className = 'category-section';
+
+    var titleWrap = document.createElement('div');
+    titleWrap.className = 'category-title';
+    var titleH3 = document.createElement('h3');
+    titleH3.textContent = '⏰ Cập nhật gần đây (' + items.length + ')';
+    titleWrap.appendChild(titleH3);
+    section.appendChild(titleWrap);
+
+    var grid = document.createElement('div');
+    grid.className = 'category-grid';
+
+    for (var j = 0; j < items.length; j++) {
+      grid.appendChild(createCard(items[j]));
+    }
+
+    section.appendChild(grid);
+    frag.appendChild(section);
+    $cardsGrid.appendChild(frag);
   }
 
   function renderCategorySections(items) {
@@ -356,7 +431,6 @@
     }
     $emptyState.style.display = 'none';
 
-    // Group items by category
     var grouped = {};
     var catOrder = [];
     for (var i = 0; i < items.length; i++) {
@@ -374,11 +448,9 @@
       var catName = catOrder[c];
       var catItems = grouped[catName];
 
-      // Category section
       var section = document.createElement('div');
       section.className = 'category-section';
 
-      // Section title
       var titleWrap = document.createElement('div');
       titleWrap.className = 'category-title';
       var titleH3 = document.createElement('h3');
@@ -386,13 +458,11 @@
       titleWrap.appendChild(titleH3);
       section.appendChild(titleWrap);
 
-      // Items grid
       var grid = document.createElement('div');
       grid.className = 'category-grid';
 
       for (var j = 0; j < catItems.length; j++) {
-        var it = catItems[j];
-        grid.appendChild(createCard(it));
+        grid.appendChild(createCard(catItems[j]));
       }
 
       section.appendChild(grid);
@@ -410,26 +480,41 @@
     card.rel = 'noopener';
     card.setAttribute('tabindex', '0');
 
-    // Zodiac Icon
+    // === ICON: Bold initials + random emoji background ===
     var iconWrap = document.createElement('div');
     iconWrap.className = 'app-card__icon-wrap';
 
-    var zodiac = it.zodiac || getZodiacForApp(it.name || 'app');
-    var zodiacEl = document.createElement('div');
-    zodiacEl.className = 'app-card__icon-zodiac';
-    zodiacEl.style.background = 'linear-gradient(135deg, ' + zodiac.color + ', ' + adjustColor(zodiac.color, 30) + ')';
-    zodiacEl.innerHTML = '<span class="zodiac-emoji">' + zodiac.emoji + '</span>';
-    iconWrap.appendChild(zodiacEl);
+    var appName = it.name || 'App';
+    var emoji = getRandomEmoji(appName);
+    var colors = getRandomColors(appName);
+    var initials = getAppInitials(appName);
 
+    var iconEl = document.createElement('div');
+    iconEl.className = 'app-card__icon-box';
+    iconEl.style.background = 'linear-gradient(135deg, ' + colors[0] + ', ' + colors[1] + ')';
+
+    // Emoji decoration (small, top-right corner)
+    var emojiEl = document.createElement('span');
+    emojiEl.className = 'icon-emoji';
+    emojiEl.textContent = emoji;
+    iconEl.appendChild(emojiEl);
+
+    // Bold initials text (center, large)
+    var initialsEl = document.createElement('span');
+    initialsEl.className = 'icon-initials';
+    initialsEl.textContent = initials;
+    iconEl.appendChild(initialsEl);
+
+    iconWrap.appendChild(iconEl);
     card.appendChild(iconWrap);
 
-    // Info
+    // === INFO ===
     var info = document.createElement('div');
     info.className = 'app-card__info';
 
     var name = document.createElement('div');
     name.className = 'app-card__name';
-    name.textContent = it.name || 'Không rõ';
+    name.textContent = appName;
     info.appendChild(name);
 
     if (it.desc) {
@@ -439,26 +524,19 @@
       info.appendChild(desc);
     }
 
-    // Size + zodiac meta
+    // Meta: size + date only (no zodiac name)
     var meta = document.createElement('div');
     meta.className = 'app-card__meta';
     var parts = [];
     if (it.size) parts.push(formatSize(it.size));
-    parts.push(zodiac.emoji + ' ' + zodiac.name);
-    meta.textContent = parts.join(' • ');
-    info.appendChild(meta);
+    if (it.updated_at) parts.push(formatDate(it.updated_at));
+    if (parts.length > 0) {
+      meta.textContent = parts.join(' • ');
+      info.appendChild(meta);
+    }
 
     card.appendChild(info);
     return card;
-  }
-
-  /* ---------- COLOR HELPER ---------- */
-  function adjustColor(hex, amount) {
-    var num = parseInt(hex.replace('#', ''), 16);
-    var r = Math.min(255, (num >> 16) + amount);
-    var g = Math.min(255, ((num >> 8) & 0x00FF) + amount);
-    var b = Math.min(255, (num & 0x0000FF) + amount);
-    return '#' + (0x1000000 + (r << 16) + (g << 8) + b).toString(16).slice(1);
   }
 
   function selectTab(category) {
@@ -474,13 +552,11 @@
   }
 
   /* ---------- EVENT DELEGATION ---------- */
-  // Tabs click
   $tabsBar.addEventListener('click', function (e) {
     var btn = e.target.closest('.tab-btn');
     if (btn) selectTab(btn.dataset.category);
   });
 
-  // Search input
   var searchDebounce = null;
   $searchInput.addEventListener('input', function () {
     clearTimeout(searchDebounce);
@@ -490,7 +566,6 @@
     }, 180);
   });
 
-  // Buttons
   $btnRefresh.addEventListener('click', function () {
     showToast('🔄 Đang làm mới...');
     fetchData(false);
