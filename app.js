@@ -1,43 +1,54 @@
 /* ============================================================
-   app.js — CHUM APP — Mobile + Android TV App Catalog
+   app.js — CHUM APP — PC / iOS / Android / Android TV
    Auto-detect device → show appropriate UI
    ============================================================ */
 (function () {
   'use strict';
 
-  /* ---------- DEVICE DETECTION ---------- */
-  var IS_TV = (function () {
+  /* ---------- DEVICE DETECTION ----------
+     Detects: 'android-tv' | 'android' | 'ios' | 'pc'
+     Priority: URL override > UA sniffing + screen heuristics
+  */
+  function detectDevice() {
     var ua = navigator.userAgent || '';
-    // Android TV, Fire TV, smart TV indicators
-    if (/Android TV|BRAVIA|SmartTV|SMART-TV|GoogleTV|Nexus Player|AFT|AFTM|AFTT|AFTS|AFTB|AFTRS|Fire TV/i.test(ua)) return true;
-    // Android without "Mobile" = likely TV/tablet-as-TV
+
+    // 1) Android TV / Fire TV / Smart TV
+    if (/Android TV|BRAVIA|SmartTV|SMART-TV|GoogleTV|Nexus Player|AFT[A-Z]|Fire TV|Leanback/i.test(ua)) return 'android-tv';
+    // Android without "Mobile" + large landscape = TV
     if (/Android/i.test(ua) && !/Mobile/i.test(ua)) {
-      // Large landscape screen → TV
-      if (window.screen && window.screen.width >= 960 && window.screen.width > window.screen.height) return true;
+      if (window.screen && window.screen.width >= 960 && window.screen.width > window.screen.height) return 'android-tv';
     }
-    // Leanback feature (some TV browsers expose this)
-    if (/Leanback/i.test(ua)) return true;
-    // No touch + large screen = TV
-    if (!('ontouchstart' in window) && window.innerWidth >= 960) return true;
-    return false;
-  })();
 
-  // Allow URL override: ?mode=tv or ?mode=mobile
-  (function () {
+    // 2) iOS (iPhone, iPad, iPod)
+    if (/iPhone|iPod/i.test(ua)) return 'ios';
+    if (/iPad/i.test(ua)) return 'ios';
+    // iPad on iOS 13+ reports as Mac
+    if (/Macintosh/i.test(ua) && 'ontouchstart' in window && navigator.maxTouchPoints > 1) return 'ios';
+
+    // 3) Android phone / tablet
+    if (/Android/i.test(ua)) return 'android';
+
+    // 4) PC (Windows, Mac, Linux, ChromeOS)
+    return 'pc';
+  }
+
+  // Allow URL override: ?mode=android-tv | android | ios | pc
+  var DEVICE_MODE = (function () {
     var params = new URLSearchParams(window.location.search);
-    var mode = params.get('mode');
-    if (mode === 'tv') window._FORCE_TV = true;
-    if (mode === 'mobile') window._FORCE_MOBILE = true;
+    var override = params.get('mode');
+    if (override && /^(android-tv|android|ios|pc)$/.test(override)) return override;
+    return detectDevice();
   })();
 
-  if (window._FORCE_TV) { /* override */ }
-  else if (window._FORCE_MOBILE) { /* override */ }
+  // Layout group: 'tv' for lean-back, 'mobile' for touch, 'desktop' for mouse+keyboard
+  var LAYOUT = (DEVICE_MODE === 'android-tv') ? 'tv' :
+               (DEVICE_MODE === 'android' || DEVICE_MODE === 'ios') ? 'mobile' : 'desktop';
 
-  var DEVICE_MODE = window._FORCE_TV ? 'tv' : (window._FORCE_MOBILE ? 'mobile' : (IS_TV ? 'tv' : 'mobile'));
-
-  // Apply body class immediately
-  document.body.classList.add(DEVICE_MODE === 'tv' ? 'is-tv' : 'is-mobile');
+  // Apply body classes immediately
+  document.body.classList.add('is-' + DEVICE_MODE.replace('-', ''));
+  document.body.classList.add('layout-' + LAYOUT);
   document.documentElement.setAttribute('data-device', DEVICE_MODE);
+  document.documentElement.setAttribute('data-layout', LAYOUT);
 
   /* ---------- CONSTANTS ---------- */
   var GITHUB_API_URL = 'https://api.github.com/repos/Chumvn/apktv/releases/tags/V1.0';
@@ -610,7 +621,7 @@
   /* ============================================================
      D-PAD / REMOTE NAVIGATION (Android TV)
      ============================================================ */
-  if (DEVICE_MODE === 'tv') {
+  if (LAYOUT === 'tv') {
     (function () {
       var KEY = { LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, ENTER: 13, BACK: 27 };
 
@@ -811,12 +822,18 @@
   }
 
   /* ---------- DEVICE MODE INDICATOR ---------- */
+  var DEVICE_INFO = {
+    'android-tv': { icon: '📺', label: 'Android TV', color: '#2dd4bf' },
+    'android':    { icon: '🤖', label: 'Android',    color: '#3dd68c' },
+    'ios':        { icon: '🍎', label: 'iOS',        color: '#60a5fa' },
+    'pc':         { icon: '🖥️', label: 'PC',         color: '#a78bfa' }
+  };
+
   function showDeviceIndicator() {
-    var icon = DEVICE_MODE === 'tv' ? '📺' : '📱';
-    var label = DEVICE_MODE === 'tv' ? 'Android TV' : 'Di động';
+    var info = DEVICE_INFO[DEVICE_MODE] || DEVICE_INFO['pc'];
     var indicator = document.createElement('span');
     indicator.className = 'device-indicator';
-    indicator.textContent = ' • ' + icon + ' ' + label;
+    indicator.innerHTML = ' • <span class="device-badge" style="background:' + info.color + '">' + info.icon + ' ' + info.label + '</span>';
     $statusLine.appendChild(indicator);
   }
 
@@ -826,4 +843,3 @@
   setTimeout(showDeviceIndicator, 2000);
 
 })();
-
