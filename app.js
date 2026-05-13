@@ -1,9 +1,43 @@
 /* ============================================================
-   app.js — CHUM APP — Mobile-friendly App Catalog
-   Auto-detect APKs from GitHub Releases + Random Emoji Icons
+   app.js — CHUM APP — Mobile + Android TV App Catalog
+   Auto-detect device → show appropriate UI
    ============================================================ */
 (function () {
   'use strict';
+
+  /* ---------- DEVICE DETECTION ---------- */
+  var IS_TV = (function () {
+    var ua = navigator.userAgent || '';
+    // Android TV, Fire TV, smart TV indicators
+    if (/Android TV|BRAVIA|SmartTV|SMART-TV|GoogleTV|Nexus Player|AFT|AFTM|AFTT|AFTS|AFTB|AFTRS|Fire TV/i.test(ua)) return true;
+    // Android without "Mobile" = likely TV/tablet-as-TV
+    if (/Android/i.test(ua) && !/Mobile/i.test(ua)) {
+      // Large landscape screen → TV
+      if (window.screen && window.screen.width >= 960 && window.screen.width > window.screen.height) return true;
+    }
+    // Leanback feature (some TV browsers expose this)
+    if (/Leanback/i.test(ua)) return true;
+    // No touch + large screen = TV
+    if (!('ontouchstart' in window) && window.innerWidth >= 960) return true;
+    return false;
+  })();
+
+  // Allow URL override: ?mode=tv or ?mode=mobile
+  (function () {
+    var params = new URLSearchParams(window.location.search);
+    var mode = params.get('mode');
+    if (mode === 'tv') window._FORCE_TV = true;
+    if (mode === 'mobile') window._FORCE_MOBILE = true;
+  })();
+
+  if (window._FORCE_TV) { /* override */ }
+  else if (window._FORCE_MOBILE) { /* override */ }
+
+  var DEVICE_MODE = window._FORCE_TV ? 'tv' : (window._FORCE_MOBILE ? 'mobile' : (IS_TV ? 'tv' : 'mobile'));
+
+  // Apply body class immediately
+  document.body.classList.add(DEVICE_MODE === 'tv' ? 'is-tv' : 'is-mobile');
+  document.documentElement.setAttribute('data-device', DEVICE_MODE);
 
   /* ---------- CONSTANTS ---------- */
   var GITHUB_API_URL = 'https://api.github.com/repos/Chumvn/apktv/releases/tags/V1.0';
@@ -573,14 +607,223 @@
   $btnTheme.addEventListener('click', toggleTheme);
   $btnRetry.addEventListener('click', function () { fetchData(false); });
 
+  /* ============================================================
+     D-PAD / REMOTE NAVIGATION (Android TV)
+     ============================================================ */
+  if (DEVICE_MODE === 'tv') {
+    (function () {
+      var KEY = { LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, ENTER: 13, BACK: 27 };
+
+      function getAllFocusable() {
+        return Array.prototype.slice.call(document.querySelectorAll('.focusable:not([style*="display: none"]):not([style*="display:none"])'));
+      }
+
+      function getTabButtons() {
+        return Array.prototype.slice.call($tabsBar.querySelectorAll('.tab-btn'));
+      }
+
+      function getCardElements() {
+        return Array.prototype.slice.call($cardsGrid.querySelectorAll('.app-card'));
+      }
+
+      // Get the currently focused element
+      function getFocused() {
+        return document.activeElement;
+      }
+
+      // Focus an element with scroll into view
+      function focusElement(el) {
+        if (!el) return;
+        el.focus({ preventScroll: false });
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+      }
+
+      // Find nearest element in a direction
+      function findNearest(current, candidates, direction) {
+        if (!current || candidates.length === 0) return null;
+
+        var rect = current.getBoundingClientRect();
+        var cx = rect.left + rect.width / 2;
+        var cy = rect.top + rect.height / 2;
+
+        var best = null;
+        var bestDist = Infinity;
+
+        for (var i = 0; i < candidates.length; i++) {
+          var el = candidates[i];
+          if (el === current) continue;
+
+          var r = el.getBoundingClientRect();
+          var ex = r.left + r.width / 2;
+          var ey = r.top + r.height / 2;
+          var dx = ex - cx;
+          var dy = ey - cy;
+
+          var valid = false;
+          switch (direction) {
+            case 'left': valid = dx < -10; break;
+            case 'right': valid = dx > 10; break;
+            case 'up': valid = dy < -10; break;
+            case 'down': valid = dy > 10; break;
+          }
+
+          if (!valid) continue;
+
+          // Distance weighted by direction
+          var dist;
+          if (direction === 'left' || direction === 'right') {
+            dist = Math.abs(dx) + Math.abs(dy) * 3;
+          } else {
+            dist = Math.abs(dy) + Math.abs(dx) * 3;
+          }
+
+          if (dist < bestDist) {
+            bestDist = dist;
+            best = el;
+          }
+        }
+        return best;
+      }
+
+      document.addEventListener('keydown', function (e) {
+        var code = e.keyCode || e.which;
+        var focused = getFocused();
+        var isTab = focused && focused.classList.contains('tab-btn');
+        var isCard = focused && focused.classList.contains('app-card');
+        var isSearch = focused === $searchInput;
+
+        // If typing in search, let it be (except arrows)
+        if (isSearch && code !== KEY.DOWN && code !== KEY.UP && code !== KEY.BACK) return;
+
+        switch (code) {
+          case KEY.LEFT:
+            e.preventDefault();
+            if (isTab) {
+              var tabs = getTabButtons();
+              var idx = tabs.indexOf(focused);
+              if (idx > 0) focusElement(tabs[idx - 1]);
+            } else if (isCard) {
+              var target = findNearest(focused, getCardElements(), 'left');
+              if (target) focusElement(target);
+              else {
+                // Try tabs
+                var tabs2 = getTabButtons();
+                if (tabs2.length > 0) focusElement(tabs2[tabs2.length - 1]);
+              }
+            } else {
+              var all = getAllFocusable();
+              var i = all.indexOf(focused);
+              if (i > 0) focusElement(all[i - 1]);
+            }
+            break;
+
+          case KEY.RIGHT:
+            e.preventDefault();
+            if (isTab) {
+              var tabs = getTabButtons();
+              var idx = tabs.indexOf(focused);
+              if (idx < tabs.length - 1) focusElement(tabs[idx + 1]);
+            } else if (isCard) {
+              var target = findNearest(focused, getCardElements(), 'right');
+              if (target) focusElement(target);
+            } else {
+              var all = getAllFocusable();
+              var i = all.indexOf(focused);
+              if (i < all.length - 1) focusElement(all[i + 1]);
+            }
+            break;
+
+          case KEY.UP:
+            e.preventDefault();
+            if (isCard) {
+              var target = findNearest(focused, getCardElements(), 'up');
+              if (target) {
+                focusElement(target);
+              } else {
+                // Go to tabs
+                var tabs = getTabButtons();
+                var selTab = $tabsBar.querySelector('[aria-selected="true"]');
+                focusElement(selTab || tabs[0]);
+              }
+            } else if (isTab) {
+              // Go to topbar
+              focusElement($btnRefresh);
+            } else {
+              var all = getAllFocusable();
+              var i = all.indexOf(focused);
+              if (i > 0) focusElement(all[i - 1]);
+            }
+            break;
+
+          case KEY.DOWN:
+            e.preventDefault();
+            if (isTab || isSearch) {
+              // Jump to first card
+              var cards = getCardElements();
+              if (cards.length > 0) focusElement(cards[0]);
+            } else if (isCard) {
+              var target = findNearest(focused, getCardElements(), 'down');
+              if (target) focusElement(target);
+            } else {
+              // From topbar → tabs
+              var selTab = $tabsBar.querySelector('[aria-selected="true"]');
+              var tabs = getTabButtons();
+              focusElement(selTab || tabs[0]);
+            }
+            break;
+
+          case KEY.ENTER:
+            if (isTab) {
+              e.preventDefault();
+              selectTab(focused.dataset.category);
+              // After tab switch, focus first card
+              setTimeout(function () {
+                var cards = getCardElements();
+                if (cards.length > 0) focusElement(cards[0]);
+              }, 100);
+            }
+            // For cards: default <a> behavior handles it
+            break;
+
+          case KEY.BACK:
+            // Could be used to go back to tabs from cards
+            if (isCard) {
+              e.preventDefault();
+              var selTab = $tabsBar.querySelector('[aria-selected="true"]');
+              if (selTab) focusElement(selTab);
+            }
+            break;
+        }
+      });
+
+      // Auto-focus first tab on load
+      setTimeout(function () {
+        var selTab = $tabsBar.querySelector('[aria-selected="true"]');
+        if (selTab) selTab.focus();
+      }, 1500);
+    })();
+  }
+
   /* ---------- AUTO REFRESH ---------- */
   function startAutoRefresh() {
     clearInterval(refreshTimer);
     refreshTimer = setInterval(function () { fetchData(true); }, REFRESH_INTERVAL);
   }
 
+  /* ---------- DEVICE MODE INDICATOR ---------- */
+  function showDeviceIndicator() {
+    var icon = DEVICE_MODE === 'tv' ? '📺' : '📱';
+    var label = DEVICE_MODE === 'tv' ? 'Android TV' : 'Di động';
+    var indicator = document.createElement('span');
+    indicator.className = 'device-indicator';
+    indicator.textContent = ' • ' + icon + ' ' + label;
+    $statusLine.appendChild(indicator);
+  }
+
   /* ---------- INIT ---------- */
   fetchData(false);
   startAutoRefresh();
+  setTimeout(showDeviceIndicator, 2000);
 
 })();
+

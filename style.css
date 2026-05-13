@@ -573,156 +573,371 @@ a {
 }
 
 /* ==========================================================
-   RESPONSIVE: Android TV (landscape 1920px) → Tablet → Mobile
+   RESPONSIVE: Android TV (body.is-tv) vs Mobile (body.is-mobile)
    ========================================================== */
 
-/* ---- Android TV / Large Screen (> 1200px) ---- */
-@media (min-width: 1200px) {
-  .category-grid,
-  .skeleton-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
+/* ---------- ANDROID TV MODE ---------- */
+body.is-tv {
+  cursor: none;
+  overflow-x: hidden;
+}
 
-  .app-card {
-    padding: 12px;
-    gap: 14px;
-  }
+body.is-tv .topbar {
+  height: 72px;
+  padding: 0 40px;
+  border-bottom: 2px solid var(--border);
+}
 
-  .app-card__icon-box {
-    width: 72px;
-    height: 72px;
-  }
+body.is-tv .logo-chum {
+  font-size: 1.8rem;
+  letter-spacing: 2px;
+}
 
-  .icon-initials {
-    font-size: 1.6rem;
-  }
+body.is-tv .logo-app {
+  font-size: 1.8rem;
+  letter-spacing: 2px;
+}
 
-  .icon-emoji {
-    font-size: .95rem;
-  }
+/* Hide search on TV - not practical with remote */
+body.is-tv .search-wrap {
+  display: none;
+}
 
-  .app-card__name {
-    font-size: 1rem;
+body.is-tv .topbar-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+}
+
+body.is-tv .topbar-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+body.is-tv .topbar__right {
+  gap: 12px;
+}
+
+/* TV Tabs: large, horizontally scrollable */
+body.is-tv .tabs-bar {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  gap: 10px;
+  padding: 12px 40px;
+  top: 72px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  border-bottom: 2px solid var(--border);
+}
+
+body.is-tv .tabs-bar::-webkit-scrollbar {
+  display: none;
+}
+
+body.is-tv .tab-btn {
+  padding: 12px 28px;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 14px;
+  min-width: max-content;
+  transition: all .25s cubic-bezier(.4,0,.2,1);
+}
+
+body.is-tv .tab-btn[aria-selected="true"] {
+  transform: scale(1.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, .35);
+}
+
+/* TV Main content */
+body.is-tv .main-content {
+  padding: 24px 40px 80px;
+}
+
+body.is-tv .status-line {
+  padding: 8px 40px;
+  font-size: .85rem;
+}
+
+/* TV Category Grid: 4-5 columns */
+body.is-tv .category-grid {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+body.is-tv .skeleton-grid {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+body.is-tv .category-title h3 {
+  font-size: 1.15rem;
+  padding-left: 16px;
+  border-left-width: 4px;
+}
+
+/* TV App Card: larger, bolder */
+body.is-tv .app-card {
+  padding: 16px;
+  gap: 16px;
+  border-radius: 16px;
+  border-width: 2px;
+  min-height: 100px;
+  transition: all .25s cubic-bezier(.4,0,.2,1);
+}
+
+body.is-tv .app-card__icon-box {
+  width: 88px;
+  height: 88px;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .35);
+}
+
+body.is-tv .icon-initials {
+  font-size: 1.8rem;
+}
+
+body.is-tv .icon-emoji {
+  font-size: 1.1rem;
+  top: 4px;
+  right: 4px;
+}
+
+body.is-tv .app-card__name {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+body.is-tv .app-card__desc {
+  font-size: .88rem;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+body.is-tv .app-card__meta {
+  font-size: .82rem;
+  margin-top: 2px;
+}
+
+body.is-tv .sk-icon {
+  width: 88px;
+  height: 88px;
+  border-radius: 16px;
+}
+
+/* ===== TV FOCUS SYSTEM: The star of the show ===== */
+body.is-tv .focusable:focus,
+body.is-tv .focusable:focus-visible {
+  outline: 4px solid var(--focus-ring);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 8px var(--accent-glow), 0 8px 40px rgba(249, 115, 22, .3);
+  z-index: 10;
+}
+
+body.is-tv .app-card:focus,
+body.is-tv .app-card:focus-visible {
+  background: var(--bg-card-h);
+  border-color: var(--accent);
+  transform: scale(1.06);
+  box-shadow:
+    0 0 0 4px var(--accent),
+    0 0 0 8px var(--accent-glow),
+    0 12px 48px rgba(249, 115, 22, .35);
+  z-index: 10;
+}
+
+body.is-tv .app-card:focus .app-card__icon-box {
+  transform: scale(1.1) rotate(-3deg);
+}
+
+body.is-tv .app-card:focus .app-card__name {
+  color: var(--accent);
+}
+
+body.is-tv .app-card:focus::before {
+  opacity: 1;
+}
+
+body.is-tv .tab-btn:focus,
+body.is-tv .tab-btn:focus-visible {
+  transform: scale(1.12);
+  box-shadow:
+    0 0 0 4px rgba(255,255,255,.4),
+    0 6px 24px rgba(0, 0, 0, .4);
+  outline: none;
+}
+
+body.is-tv .topbar-btn:focus,
+body.is-tv .topbar-btn:focus-visible {
+  transform: scale(1.15);
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 6px var(--accent-glow);
+}
+
+/* TV focus pulse animation */
+@keyframes tvFocusPulse {
+  0%, 100% { box-shadow: 0 0 0 4px var(--accent), 0 0 0 8px var(--accent-glow), 0 12px 48px rgba(249,115,22,.35); }
+  50% { box-shadow: 0 0 0 4px var(--accent), 0 0 0 12px var(--accent-glow), 0 16px 56px rgba(249,115,22,.45); }
+}
+
+body.is-tv .app-card:focus {
+  animation: tvFocusPulse 2s ease-in-out infinite;
+}
+
+/* TV: extra large screen (5 columns at 1600px+) */
+@media (min-width: 1600px) {
+  body.is-tv .category-grid,
+  body.is-tv .skeleton-grid {
+    grid-template-columns: repeat(5, 1fr);
   }
 }
 
-/* ---- Tablet (769px ~ 1080px) ---- */
+/* TV: ultra-wide (6 columns at 2200px+) */
+@media (min-width: 2200px) {
+  body.is-tv .category-grid,
+  body.is-tv .skeleton-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 20px;
+  }
+
+  body.is-tv .app-card__icon-box {
+    width: 96px;
+    height: 96px;
+  }
+
+  body.is-tv .icon-initials {
+    font-size: 2rem;
+  }
+
+  body.is-tv .app-card__name {
+    font-size: 1.2rem;
+  }
+}
+
+/* ---------- MOBILE MODE ---------- */
+body.is-mobile .topbar {
+  padding: 0 12px;
+}
+
+/* Mobile: keep current responsive breakpoints */
 @media (max-width: 1080px) {
-  .category-grid,
-  .skeleton-grid {
+  body.is-mobile .category-grid,
+  body.is-mobile .skeleton-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-/* ---- Mobile landscape / small tablet (< 768px) ---- */
 @media (max-width: 768px) {
-  .topbar {
+  body.is-mobile .topbar {
     padding: 0 12px;
     height: 52px;
   }
 
-  .logo-chum,
-  .logo-app {
+  body.is-mobile .logo-chum,
+  body.is-mobile .logo-app {
     font-size: 1.1rem;
   }
 
-  .topbar-btn {
+  body.is-mobile .topbar-btn {
     width: 34px;
     height: 34px;
   }
 
-  .topbar-btn svg {
+  body.is-mobile .topbar-btn svg {
     width: 16px;
     height: 16px;
   }
 
-  .search-input {
+  body.is-mobile .search-input {
     width: 150px;
     height: 34px;
     font-size: .82rem;
     padding: 0 12px;
   }
 
-  .tabs-bar {
+  body.is-mobile .tabs-bar {
     padding: 6px 12px;
     top: 52px;
   }
 
-  .tab-btn {
+  body.is-mobile .tab-btn {
     padding: 6px 14px;
     font-size: .75rem;
   }
 
-  .main-content {
+  body.is-mobile .main-content {
     padding: 10px 12px 40px;
   }
 
-  .category-grid,
-  .skeleton-grid {
+  body.is-mobile .category-grid,
+  body.is-mobile .skeleton-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
 
-  .app-card {
+  body.is-mobile .app-card {
     padding: 8px;
     gap: 10px;
   }
 
-  .app-card__icon-box {
+  body.is-mobile .app-card__icon-box {
     width: 56px;
     height: 56px;
   }
 
-  .icon-initials {
+  body.is-mobile .icon-initials {
     font-size: 1.2rem;
   }
 
-  .icon-emoji {
+  body.is-mobile .icon-emoji {
     font-size: .75rem;
   }
 
-  .app-card__name {
+  body.is-mobile .app-card__name {
     font-size: .85rem;
   }
 
-  .app-card__desc {
+  body.is-mobile .app-card__desc {
     font-size: .74rem;
   }
 }
 
-/* ---- Mobile portrait (< 480px) ---- */
+/* Mobile portrait (< 480px) */
 @media (max-width: 480px) {
-  .topbar {
+  body.is-mobile .topbar {
     padding: 0 10px;
     height: 48px;
     gap: 6px;
   }
 
-  .topbar__left {
+  body.is-mobile .topbar__left {
     gap: 8px;
   }
 
-  .logo-chum,
-  .logo-app {
+  body.is-mobile .logo-chum,
+  body.is-mobile .logo-app {
     font-size: 1rem;
     letter-spacing: 1px;
   }
 
-  .topbar__right {
+  body.is-mobile .topbar__right {
     gap: 5px;
   }
 
-  .topbar-btn {
+  body.is-mobile .topbar-btn {
     width: 30px;
     height: 30px;
   }
 
-  .topbar-btn svg {
+  body.is-mobile .topbar-btn svg {
     width: 14px;
     height: 14px;
   }
 
-  .search-input {
+  body.is-mobile .search-input {
     width: 110px;
     height: 30px;
     font-size: .78rem;
@@ -730,70 +945,76 @@ a {
     border-radius: 15px;
   }
 
-  .tabs-bar {
+  body.is-mobile .tabs-bar {
     padding: 5px 10px;
     gap: 5px;
     top: 48px;
   }
 
-  .tab-btn {
+  body.is-mobile .tab-btn {
     padding: 5px 12px;
     font-size: .72rem;
   }
 
-  .main-content {
+  body.is-mobile .main-content {
     padding: 8px 10px 30px;
   }
 
-  .category-grid,
-  .skeleton-grid {
+  body.is-mobile .category-grid,
+  body.is-mobile .skeleton-grid {
     grid-template-columns: 1fr;
     gap: 8px;
   }
 
-  .category-title h3 {
+  body.is-mobile .category-title h3 {
     font-size: .82rem;
   }
 
-  .app-card {
+  body.is-mobile .app-card {
     padding: 10px;
     gap: 12px;
     border-radius: 10px;
   }
 
-  .app-card__icon-box {
+  body.is-mobile .app-card__icon-box {
     width: 60px;
     height: 60px;
     border-radius: 8px;
   }
 
-  .icon-initials {
+  body.is-mobile .icon-initials {
     font-size: 1.3rem;
   }
 
-  .icon-emoji {
+  body.is-mobile .icon-emoji {
     font-size: .8rem;
   }
 
-  .app-card__name {
+  body.is-mobile .app-card__name {
     font-size: .88rem;
   }
 
-  .app-card__desc {
+  body.is-mobile .app-card__desc {
     font-size: .76rem;
     -webkit-line-clamp: 2;
     line-clamp: 2;
   }
 
-  .sk-icon {
+  body.is-mobile .sk-icon {
     width: 60px;
     height: 60px;
   }
 
-  .status-line {
+  body.is-mobile .status-line {
     padding: 3px 10px;
     font-size: .68rem;
   }
+}
+
+/* ---------- DEVICE INDICATOR ---------- */
+.device-indicator {
+  font-weight: 600;
+  color: var(--accent);
 }
 
 /* ---------- SCROLLBAR ---------- */
@@ -801,3 +1022,6 @@ a {
 ::-webkit-scrollbar-track { background: var(--bg) }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-dim) }
+
+body.is-tv ::-webkit-scrollbar { display: none }
+body.is-tv { scrollbar-width: none; -ms-overflow-style: none; }
