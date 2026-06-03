@@ -276,6 +276,26 @@ a { text-decoration: none; color: inherit; }
   text-overflow: ellipsis; white-space: nowrap; font-weight: 600;
 }
 
+/* File type name row & badge */
+.app-card__name-row {
+  display: flex; align-items: center; gap: 6px; min-width: 0;
+}
+.app-card__name-row .app-card__name {
+  flex: 1; min-width: 0;
+}
+.app-card__badge {
+  flex-shrink: 0; padding: 2px 7px; border-radius: 4px;
+  font-size: .6rem; font-weight: 800; letter-spacing: .5px;
+  line-height: 1.4; text-transform: uppercase; color: #fff;
+  white-space: nowrap;
+}
+.badge-apk { background: #22c55e; }
+.badge-xapk { background: #8b5cf6; }
+.badge-ipa { background: #3b82f6; }
+[data-theme="light"] .badge-apk { background: #16a34a; }
+[data-theme="light"] .badge-xapk { background: #7c3aed; }
+[data-theme="light"] .badge-ipa { background: #2563eb; }
+
 /* ---------- SKELETON ---------- */
 .skeleton-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--card-gap); }
 .skeleton-card {
