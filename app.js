@@ -56,6 +56,10 @@
   var REFRESH_INTERVAL = 300000;
   var TOAST_DURATION = 2800;
   var TAB_ALL = 'MỚI NHẤT';
+  var CACHE_KEY = 'chumapp_cache';
+  var CACHE_ETAG_KEY = 'chumapp_etag';
+  var CACHE_TIME_KEY = 'chumapp_cache_time';
+  var CACHE_MAX_AGE = 600000; // 10 phút
 
   /* ---------- RANDOM EMOJI POOL (all kinds, not just zodiac) ---------- */
   var EMOJI_POOL = [
@@ -86,15 +90,15 @@
   var CATEGORY_RULES = [
     {
       cat: 'YouTube / SmartTube',
-      keywords: ['smarttube', 'youtube', 'cobalt']
+      keywords: ['smarttube', 'youtube', 'cobalt', 'tizentube', 'totube']
     },
     {
       cat: 'Xem phim / TV',
-      keywords: ['hdotv', 'hieuga', 'rapphim', 'dailymotion', 'nvc', 'sparkle', 'vlc', 'kiki', 'phim', 'movie', 'cinema', 'film', 'video', 'media', 'player']
+      keywords: ['hdotv', 'hieuga', 'rapphim', 'dailymotion', 'nvc', 'sparkle', 'vlc', 'kiki', 'phim', 'movie', 'cinema', 'film', 'video', 'media', 'player', 'cloudstream', 'stremio', 'chophim', 'cotv', 'dltivi', 'vietplay', 'xem-tv', 'tv365', 'thaitv', 'vtvprime', 'imedia', 'vaxplayer', 'vaxapp', 'tatcaapp']
     },
     {
       cat: 'IPTV',
-      keywords: ['iptv', 'tivimate', 'televizo', 'ott', 'navigator', 'live+channels', 'livechannel', 'live_channel']
+      keywords: ['iptv', 'tivimate', 'televizo', 'ott', 'navigator', 'live+channels', 'livechannel', 'live_channel', 'm3u']
     },
     {
       cat: 'Launcher',
@@ -102,7 +106,7 @@
     },
     {
       cat: 'File Manager',
-      keywords: ['file', 'explorer', 'manager', 'mixplorer', 'x-plore', 'xplore', 'totalcmd', 'total_commander', 'rsfile']
+      keywords: ['file', 'explorer', 'mixplorer', 'x-plore', 'xplore', 'totalcmd', 'total_commander', 'rsfile']
     },
     {
       cat: 'App Store',
@@ -110,15 +114,15 @@
     },
     {
       cat: 'ADB / Remote',
-      keywords: ['adb', 'remote', 'sendfiles']
+      keywords: ['adb', 'remote', 'sendfiles', 'localsend']
     },
     {
       cat: 'Voice / Input',
-      keywords: ['voice', 'supervoice', 'mapvoice', 'keyboard', 'input']
+      keywords: ['voice', 'supervoice', 'mapvoice', 'dunevoice', 'keyboard', 'input']
     },
     {
       cat: 'Tiện ích',
-      keywords: ['cleaner', 'atvtools', 'button', 'mapper', 'remapper', 'quickaction', 'orientation', 'ferrari', 'downloader', 'sai', 'ntp', 'reboot', 'coreelec', 'tool']
+      keywords: ['cleaner', 'atvtools', 'button', 'mapper', 'remapper', 'quickaction', 'orientation', 'ferrari', 'downloader', 'sai', 'ntp', 'reboot', 'coreelec', 'tool', 'adguard', 'aida64', 'tiktok', 'imou', 'net.cang', 'volumeboost', 'getout', 'tizen', 'vproject']
     }
   ];
 
@@ -311,9 +315,39 @@
     return result;
   }
 
+  /* ---------- CACHE HELPERS ---------- */
+  function getCachedData() {
+    try {
+      var cached = localStorage.getItem(CACHE_KEY);
+      var cacheTime = parseInt(localStorage.getItem(CACHE_TIME_KEY) || '0', 10);
+      if (cached && (Date.now() - cacheTime < CACHE_MAX_AGE)) {
+        return JSON.parse(cached);
+      }
+    } catch (e) { /* ignore */ }
+    return null;
+  }
+
+  function setCachedData(data, etag) {
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+      localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
+      if (etag) localStorage.setItem(CACHE_ETAG_KEY, etag);
+    } catch (e) { /* quota exceeded, ignore */ }
+  }
+
   /* ---------- FETCH DATA ---------- */
   function fetchData(isAutoRefresh) {
+    // Try cache first for instant load
     if (!isAutoRefresh) {
+      var cached = getCachedData();
+      if (cached) {
+        var categorized = transformAssets(cached);
+        processData(categorized, false);
+        showToast('⚡ Tải từ cache • ' + flatItems.length + ' ứng dụng');
+        // Still fetch in background to update
+        fetchFromAPI(true);
+        return;
+      }
       $skeleton.style.display = '';
       $cardsGrid.style.display = 'none';
       $emptyState.style.display = 'none';
@@ -321,26 +355,56 @@
       setStatus('Đang tải dữ liệu...');
     }
 
+    fetchFromAPI(isAutoRefresh);
+  }
+
+  function fetchFromAPI(isAutoRefresh) {
     var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     var signal = controller ? controller.signal : undefined;
     var timer = setTimeout(function () { if (controller) controller.abort(); }, FETCH_TIMEOUT);
 
-    fetch(GITHUB_API_URL, { signal: signal, headers: { 'Accept': 'application/vnd.github.v3+json' } })
+    var headers = { 'Accept': 'application/vnd.github.v3+json' };
+    var savedEtag = localStorage.getItem(CACHE_ETAG_KEY);
+    if (isAutoRefresh && savedEtag) {
+      headers['If-None-Match'] = savedEtag;
+    }
+
+    fetch(GITHUB_API_URL, { signal: signal, headers: headers })
       .then(function (res) {
         clearTimeout(timer);
+        // 304 Not Modified — data unchanged, use cache
+        if (res.status === 304) {
+          localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
+          if (!isAutoRefresh) setStatus('🔄 Dữ liệu chưa thay đổi • ' + flatItems.length + ' ứng dụng');
+          return null;
+        }
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
+        var etag = res.headers.get('ETag') || '';
+        return res.json().then(function (data) { return { data: data, etag: etag }; });
       })
-      .then(function (release) {
-        var categorized = transformAssets(release.assets || []);
+      .then(function (result) {
+        if (!result) return; // 304
+        var assets = result.data.assets || [];
+        setCachedData(assets, result.etag);
+        var categorized = transformAssets(assets);
         processData(categorized, isAutoRefresh);
         if (!isAutoRefresh) {
-          showToast('✅ Đã tải ' + (release.assets || []).length + ' ứng dụng');
+          showToast('✅ Đã tải ' + flatItems.length + ' ứng dụng');
         }
       })
       .catch(function (err) {
         clearTimeout(timer);
-        showError(err.message);
+        // If fetch fails but we have cache, use it
+        try {
+          var fallback = localStorage.getItem(CACHE_KEY);
+          if (fallback && !flatItems.length) {
+            var categorized = transformAssets(JSON.parse(fallback));
+            processData(categorized, isAutoRefresh);
+            showToast('⚠️ Offline — dùng dữ liệu cache');
+            return;
+          }
+        } catch (e) { /* ignore */ }
+        if (!flatItems.length) showError(err.message);
       });
   }
 
@@ -856,5 +920,12 @@
   fetchData(false);
   startAutoRefresh();
   setTimeout(showDeviceIndicator, 2000);
+
+  /* ---------- SERVICE WORKER ---------- */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./sw.js').catch(function () { /* ignore */ });
+    });
+  }
 
 })();
