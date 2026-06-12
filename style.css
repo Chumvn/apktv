@@ -292,9 +292,45 @@ a { text-decoration: none; color: inherit; }
 .badge-apk { background: #22c55e; }
 .badge-xapk { background: #8b5cf6; }
 .badge-ipa { background: #3b82f6; }
+.badge-zip { background: #f59e0b; }
+.badge-rar { background: #ef4444; }
+.badge-7z { background: #e11d48; }
+.badge-tar { background: #d97706; }
+.badge-gz { background: #ca8a04; }
+.badge-exe { background: #6366f1; }
+.badge-msi { background: #7c3aed; }
+.badge-dmg { background: #0ea5e9; }
+.badge-deb { background: #dc2626; }
+.badge-rpm { background: #b91c1c; }
+.badge-img { background: #14b8a6; }
+.badge-iso { background: #0891b2; }
+.badge-bin { background: #64748b; }
+.badge-tmp { background: #94a3b8; }
+.badge-log { background: #78716c; }
+.badge-json { background: #eab308; }
+.badge-xml { background: #f97316; }
+.badge-txt { background: #6b7280; }
+.badge-pdf { background: #dc2626; }
+.badge-doc, .badge-docx { background: #2563eb; }
+.badge-xls, .badge-xlsx { background: #16a34a; }
+.badge-ppt, .badge-pptx { background: #ea580c; }
+.badge-mp3, .badge-flac, .badge-wav, .badge-ogg { background: #e879f9; }
+.badge-mp4, .badge-mkv, .badge-avi, .badge-mov { background: #f472b6; }
+.badge-png, .badge-jpg, .badge-jpeg, .badge-gif, .badge-webp, .badge-svg { background: #2dd4bf; }
+.badge-apks { background: #059669; }
+.badge-aab { background: #10b981; }
+.badge-webmanifest { background: #a78bfa; }
+/* Generic fallback for any unknown extension */
+.app-card__badge { background: #475569; }
+
 [data-theme="light"] .badge-apk { background: #16a34a; }
 [data-theme="light"] .badge-xapk { background: #7c3aed; }
 [data-theme="light"] .badge-ipa { background: #2563eb; }
+[data-theme="light"] .badge-zip { background: #d97706; }
+[data-theme="light"] .badge-rar { background: #dc2626; }
+[data-theme="light"] .badge-exe { background: #4f46e5; }
+[data-theme="light"] .badge-tmp { background: #64748b; }
+[data-theme="light"] .app-card__badge { background: #334155; }
 
 /* ---------- SKELETON ---------- */
 .skeleton-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--card-gap); }

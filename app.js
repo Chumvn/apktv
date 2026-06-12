@@ -282,11 +282,12 @@
       var asset = assets[i];
       var fileName = asset.name || '';
 
-      // Only process APK/XAPK/IPA files
-      if (!/\.(apk|xapk|ipa)$/i.test(fileName)) continue;
+      // Extract file extension (any type)
+      var extMatch = fileName.match(/\.([a-zA-Z0-9]+)$/i);
+      if (!extMatch) continue; // skip files without extension
 
-      var baseName = fileName.replace(/\.(apk|xapk|ipa)$/i, '');
-      var fileExt = fileName.match(/\.(apk|xapk|ipa)$/i)[1].toUpperCase();
+      var fileExt = extMatch[1].toUpperCase();
+      var baseName = fileName.replace(/\.[a-zA-Z0-9]+$/i, '');
       var catName = classifyApp(baseName);
       var appName = formatAppName(baseName);
 
@@ -631,11 +632,17 @@
     name.textContent = appName;
     nameRow.appendChild(name);
 
-    // File type badge (APK / IPA / XAPK)
-    if (it.fileType) {
+    // File type badge — auto-detect from URL if not set
+    var fileType = it.fileType;
+    if (!fileType && it.apk_url) {
+      var extMatch = it.apk_url.match(/\.([a-zA-Z0-9]+)$/i);
+      if (extMatch) fileType = extMatch[1].toUpperCase();
+    }
+    if (fileType) {
       var badge = document.createElement('span');
-      badge.className = 'app-card__badge badge-' + it.fileType.toLowerCase();
-      badge.textContent = it.fileType;
+      var ft = fileType.toLowerCase();
+      badge.className = 'app-card__badge badge-' + ft;
+      badge.textContent = fileType;
       nameRow.appendChild(badge);
     }
 
