@@ -1,43 +1,43 @@
 <!DOCTYPE html>
-<html lang="vi" data-theme="light">
+<html lang="vi" data-theme="dark">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
-  <meta name="description" content="CHUM APP – Kho ứng dụng Android TV & Mobile tự động cập nhật">
-  <meta name="theme-color" content="#0f1117">
+  <meta name="description" content="KHO APP CHUM – Kho ứng dụng Android TV & Mobile">
+  <meta name="theme-color" content="#0a0a0b">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <!-- Android TV Leanback support -->
-  <meta name="supported-color-schemes" content="dark light">
   <link rel="icon" type="image/svg+xml"
-    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f97316'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-family='Arial,sans-serif' font-weight='800' font-size='22' fill='white'%3ECA%3C/text%3E%3C/svg%3E">
-  <title>CHUM APP</title>
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0b' stroke='%23c6f135' stroke-width='4'/%3E%3Ctext x='32' y='44' text-anchor='middle' font-family='Inter,Arial,sans-serif' font-weight='900' font-size='36' fill='%23c6f135'%3EK%3C/text%3E%3C/svg%3E">
+  <title>KHO APP CHUM</title>
   <link rel="stylesheet" href="./style.css">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 
 <body>
   <!-- TOP BAR -->
   <header class="topbar" role="banner">
     <div class="topbar__left">
-      <div class="topbar__logo-text" aria-label="CHUM APP logo">
-        <span class="logo-chum">CHUM</span><span class="logo-app">APP</span>
+      <div class="topbar__logo-text">
+        <span class="logo-chum">KHO</span>
+        <span class="logo-app">APP</span>
       </div>
+      <span class="topbar__version">v2.0</span>
     </div>
     <div class="topbar__right">
       <div class="search-wrap">
         <label for="search-input" class="sr-only">Tìm kiếm ứng dụng</label>
-        <input id="search-input" class="search-input focusable" type="search" placeholder="Tìm kiếm..."
+        <input id="search-input" class="search-input focusable" type="search" placeholder="🔍 Tìm kiếm..."
           autocomplete="off" data-nav-group="topbar">
       </div>
       <button id="btn-refresh" class="topbar-btn focusable" aria-label="Làm mới dữ liệu" data-nav-group="topbar"
         title="Làm mới">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
           stroke-linecap="round" stroke-linejoin="round">
           <path d="M23 4v6h-6" />
           <path d="M1 20v-6h6" />
@@ -46,9 +46,9 @@
         </svg>
       </button>
       <a id="btn-updates" class="topbar-btn focusable"
-        href="https://github.com/Chumvn/apktv/releases/tag/V1.0"
+        href="https://github.com/rupanh123-phap/928394040393939339393939949430038458575758933030202020202848485858585949400485858585859402.github.io/releases/tag/V1.0.0"
         target="_blank" rel="noopener" aria-label="Xem cập nhật mới" data-nav-group="topbar" title="Cập nhật mới">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
           stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 2v10l4 2" />
           <circle cx="12" cy="12" r="10" />
@@ -57,11 +57,11 @@
       <button id="btn-theme" class="topbar-btn focusable" aria-label="Chuyển giao diện sáng/tối" data-nav-group="topbar"
         title="Đổi giao diện">
         <svg class="icon-moon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
         </svg>
         <svg class="icon-sun" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="5" />
           <line x1="12" y1="1" x2="12" y2="3" />
           <line x1="12" y1="21" x2="12" y2="23" />

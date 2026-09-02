@@ -1,5 +1,5 @@
 /* ============================================================
-   app.js — CHUM APP — PC / iOS / Android / Android TV
+   app.js — KHO APP CHUM — Neo-Brutalist Edition
    Auto-detect device → show appropriate UI
    ============================================================ */
 (function () {
@@ -77,13 +77,13 @@
 
   /* ---------- GRADIENT COLOR PAIRS ---------- */
   var COLOR_PAIRS = [
-    ['#6366f1', '#8b5cf6'], ['#ec4899', '#f472b6'], ['#ef4444', '#f87171'],
-    ['#f59e0b', '#fbbf24'], ['#10b981', '#34d399'], ['#3b82f6', '#60a5fa'],
-    ['#8b5cf6', '#a78bfa'], ['#f97316', '#fb923c'], ['#14b8a6', '#2dd4bf'],
-    ['#e11d48', '#fb7185'], ['#6d28d9', '#7c3aed'], ['#0891b2', '#22d3ee'],
-    ['#059669', '#10b981'], ['#d946ef', '#e879f9'], ['#0ea5e9', '#38bdf8'],
-    ['#7c3aed', '#a78bfa'], ['#dc2626', '#f87171'], ['#ca8a04', '#eab308'],
-    ['#2563eb', '#3b82f6'], ['#9333ea', '#a855f7']
+    ['#c6f135', '#a3e635'], ['#ff2d78', '#ff6b9d'], ['#7c3aed', '#a78bfa'],
+    ['#00d4ff', '#38bdf8'], ['#ff6b35', '#fb923c'], ['#2dd4bf', '#5eead4'],
+    ['#f43f5e', '#fb7185'], ['#8b5cf6', '#c084fc'], ['#06b6d4', '#22d3ee'],
+    ['#eab308', '#facc15'], ['#ec4899', '#f472b6'], ['#10b981', '#34d399'],
+    ['#ef4444', '#f87171'], ['#6366f1', '#818cf8'], ['#14b8a6', '#2dd4bf'],
+    ['#d946ef', '#e879f9'], ['#f97316', '#fb923c'], ['#3b82f6', '#60a5fa'],
+    ['#84cc16', '#a3e635'], ['#e11d48', '#fb7185']
   ];
 
   /* ---------- CATEGORY KEYWORDS for auto-classification ---------- */
@@ -909,9 +909,9 @@
 
   /* ---------- DEVICE MODE INDICATOR ---------- */
   var DEVICE_INFO = {
-    'android-tv': { icon: '📺', label: 'Android TV', color: '#2dd4bf' },
-    'android':    { icon: '🤖', label: 'Android',    color: '#3dd68c' },
-    'ios':        { icon: '🍎', label: 'iOS',        color: '#60a5fa' },
+    'android-tv': { icon: '📺', label: 'Android TV', color: '#c6f135' },
+    'android':    { icon: '🤖', label: 'Android',    color: '#2dd4bf' },
+    'ios':        { icon: '🍎', label: 'iOS',        color: '#00d4ff' },
     'pc':         { icon: '🖥️', label: 'PC',         color: '#a78bfa' }
   };
 
