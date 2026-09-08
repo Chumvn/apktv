@@ -812,11 +812,12 @@
     var errorEl = document.getElementById('pw-error');
     
     if (input.value === PASSWORD_KEY) {
-      // Correct password
-      trackDownloadDevice(pendingDownloadName);
+      // Correct password — save URL before closing (close clears it)
+      var url = pendingDownloadUrl;
+      var appName = pendingDownloadName;
       closePasswordModal();
-      showToast('✅ Đã mở khóa — Đang tải ' + pendingDownloadName);
-      window.open(pendingDownloadUrl, '_blank');
+      showToast('✅ Đã mở khóa — Đang tải ' + appName);
+      window.open(url, '_blank');
     } else {
       // Wrong password
       errorEl.style.display = '';
