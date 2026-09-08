@@ -1,5 +1,5 @@
 /* Service Worker — KHO APP CHUM — Neo-Brutalist Edition */
-const CACHE_NAME = 'chumapp-nb-v1';
+const CACHE_NAME = 'chumapp-nb-v2.1';
 const ASSETS = [
   './',
   './index.html',
