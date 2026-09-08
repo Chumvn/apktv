@@ -298,6 +298,7 @@
         apk_url: asset.browser_download_url,
         size: asset.size,
         updated_at: asset.updated_at,
+        download_count: asset.download_count || 0,
         fileType: fileExt
       });
     }
@@ -585,12 +586,23 @@
   }
 
   function createCard(it) {
-    var card = document.createElement('a');
+    var card = document.createElement('div');
     card.className = 'app-card focusable';
-    card.href = it.apk_url || '#';
-    card.target = '_blank';
-    card.rel = 'noopener';
     card.setAttribute('tabindex', '0');
+    card.setAttribute('role', 'listitem');
+    card.dataset.url = it.apk_url || '#';
+
+    // Click handler with password lock
+    card.addEventListener('click', function (e) {
+      e.preventDefault();
+      showPasswordModal(it.apk_url || '#', it.name || 'App');
+    });
+    card.addEventListener('keydown', function (e) {
+      if (e.keyCode === 13 || e.which === 13) {
+        e.preventDefault();
+        showPasswordModal(it.apk_url || '#', it.name || 'App');
+      }
+    });
 
     // === ICON: Bold initials + random emoji background ===
     var iconWrap = document.createElement('div');
@@ -632,6 +644,13 @@
     name.textContent = appName;
     nameRow.appendChild(name);
 
+    // Lock icon badge
+    var lockBadge = document.createElement('span');
+    lockBadge.className = 'app-card__badge badge-lock';
+    lockBadge.textContent = '🔒';
+    lockBadge.title = 'Cần mật khẩu để tải';
+    nameRow.appendChild(lockBadge);
+
     // File type badge — auto-detect from URL if not set
     var fileType = it.fileType;
     if (!fileType && it.apk_url) {
@@ -655,10 +674,13 @@
       info.appendChild(desc);
     }
 
-    // Meta: size + date only (no zodiac name)
+    // Meta: download count + size + date
     var meta = document.createElement('div');
     meta.className = 'app-card__meta';
     var parts = [];
+    // Download count
+    var dlCount = it.download_count || 0;
+    parts.push('⬇ ' + formatDownloadCount(dlCount) + ' lượt tải');
     if (it.size) parts.push(formatSize(it.size));
     if (it.updated_at) parts.push(formatDate(it.updated_at));
     if (parts.length > 0) {
@@ -666,8 +688,171 @@
       info.appendChild(meta);
     }
 
+    // Device tracker info
+    var deviceInfo = getDownloadDevices(appName);
+    if (deviceInfo.length > 0) {
+      var devRow = document.createElement('div');
+      devRow.className = 'app-card__devices';
+      devRow.innerHTML = '📱 ' + deviceInfo.map(function(d) {
+        return '<span class="device-chip">' + d.icon + ' ' + d.label + '</span>';
+      }).join(' ');
+      info.appendChild(devRow);
+    }
+
     card.appendChild(info);
     return card;
+  }
+
+  /* ---------- FORMAT DOWNLOAD COUNT ---------- */
+  function formatDownloadCount(count) {
+    if (count >= 1000000) return (count / 1000000).toFixed(1) + 'M';
+    if (count >= 1000) return (count / 1000).toFixed(1) + 'K';
+    return count.toString();
+  }
+
+  /* ---------- DEVICE DOWNLOAD TRACKING ---------- */
+  var DOWNLOAD_DEVICES_KEY = 'chumapp_download_devices';
+
+  function getDownloadDevices(appName) {
+    try {
+      var all = JSON.parse(localStorage.getItem(DOWNLOAD_DEVICES_KEY) || '{}');
+      return all[appName] || [];
+    } catch (e) { return []; }
+  }
+
+  function trackDownloadDevice(appName) {
+    try {
+      var all = JSON.parse(localStorage.getItem(DOWNLOAD_DEVICES_KEY) || '{}');
+      if (!all[appName]) all[appName] = [];
+      var deviceLabel = DEVICE_INFO[DEVICE_MODE] || DEVICE_INFO['pc'];
+      var now = new Date().toLocaleString('vi-VN');
+      // Check if this device type already recorded
+      var exists = false;
+      for (var i = 0; i < all[appName].length; i++) {
+        if (all[appName][i].mode === DEVICE_MODE) {
+          all[appName][i].count = (all[appName][i].count || 1) + 1;
+          all[appName][i].lastTime = now;
+          exists = true;
+          break;
+        }
+      }
+      if (!exists) {
+        all[appName].push({
+          mode: DEVICE_MODE,
+          icon: deviceLabel.icon,
+          label: deviceLabel.label,
+          count: 1,
+          lastTime: now
+        });
+      }
+      localStorage.setItem(DOWNLOAD_DEVICES_KEY, JSON.stringify(all));
+    } catch (e) { /* ignore */ }
+  }
+
+  /* ---------- PASSWORD MODAL ---------- */
+  var PASSWORD_KEY = '23824';
+  var passwordModalEl = null;
+
+  function createPasswordModal() {
+    if (passwordModalEl) return;
+    
+    var overlay = document.createElement('div');
+    overlay.className = 'pw-overlay';
+    overlay.id = 'pw-overlay';
+    
+    var modal = document.createElement('div');
+    modal.className = 'pw-modal';
+    
+    modal.innerHTML = 
+      '<div class="pw-modal__header">' +
+        '<span class="pw-modal__icon">🔐</span>' +
+        '<h3 class="pw-modal__title">Nhập mật khẩu</h3>' +
+      '</div>' +
+      '<p class="pw-modal__app-name" id="pw-app-name"></p>' +
+      '<input type="password" class="pw-modal__input" id="pw-input" placeholder="Nhập mật khẩu..." autocomplete="off" maxlength="20">' +
+      '<p class="pw-modal__error" id="pw-error" style="display:none">❌ Sai mật khẩu!</p>' +
+      '<div class="pw-modal__buttons">' +
+        '<button class="pw-modal__btn pw-btn-cancel" id="pw-cancel">Hủy</button>' +
+        '<button class="pw-modal__btn pw-btn-ok" id="pw-ok">Mở khóa</button>' +
+      '</div>';
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    passwordModalEl = overlay;
+    
+    // Close on overlay click
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) closePasswordModal();
+    });
+    
+    document.getElementById('pw-cancel').addEventListener('click', closePasswordModal);
+  }
+
+  var pendingDownloadUrl = '';
+  var pendingDownloadName = '';
+
+  function showPasswordModal(url, appName) {
+    createPasswordModal();
+    pendingDownloadUrl = url;
+    pendingDownloadName = appName;
+    
+    document.getElementById('pw-app-name').textContent = '📦 ' + appName;
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-error').style.display = 'none';
+    
+    passwordModalEl.classList.add('show');
+    
+    setTimeout(function() {
+      document.getElementById('pw-input').focus();
+    }, 100);
+    
+    // Setup OK button handler
+    var okBtn = document.getElementById('pw-ok');
+    var newOk = okBtn.cloneNode(true);
+    okBtn.parentNode.replaceChild(newOk, okBtn);
+    newOk.addEventListener('click', handlePasswordSubmit);
+    
+    // Enter key handler
+    var input = document.getElementById('pw-input');
+    var newInput = input.cloneNode(true);
+    input.parentNode.replaceChild(newInput, input);
+    newInput.addEventListener('keydown', function(e) {
+      if (e.keyCode === 13) {
+        e.preventDefault();
+        handlePasswordSubmit();
+      }
+    });
+    setTimeout(function() { newInput.focus(); }, 150);
+  }
+
+  function handlePasswordSubmit() {
+    var input = document.getElementById('pw-input');
+    var errorEl = document.getElementById('pw-error');
+    
+    if (input.value === PASSWORD_KEY) {
+      // Correct password
+      trackDownloadDevice(pendingDownloadName);
+      closePasswordModal();
+      showToast('✅ Đã mở khóa — Đang tải ' + pendingDownloadName);
+      window.open(pendingDownloadUrl, '_blank');
+    } else {
+      // Wrong password
+      errorEl.style.display = '';
+      input.value = '';
+      input.focus();
+      // Shake animation
+      var modal = passwordModalEl.querySelector('.pw-modal');
+      modal.classList.add('shake');
+      setTimeout(function() { modal.classList.remove('shake'); }, 500);
+    }
+  }
+
+  function closePasswordModal() {
+    if (passwordModalEl) {
+      passwordModalEl.classList.remove('show');
+    }
+    pendingDownloadUrl = '';
+    pendingDownloadName = '';
   }
 
   function selectTab(category) {
