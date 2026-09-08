@@ -586,23 +586,12 @@
   }
 
   function createCard(it) {
-    var card = document.createElement('div');
+    var card = document.createElement('a');
     card.className = 'app-card focusable';
+    card.href = it.apk_url || '#';
+    card.target = '_blank';
+    card.rel = 'noopener';
     card.setAttribute('tabindex', '0');
-    card.setAttribute('role', 'listitem');
-    card.dataset.url = it.apk_url || '#';
-
-    // Click handler with password lock
-    card.addEventListener('click', function (e) {
-      e.preventDefault();
-      showPasswordModal(it.apk_url || '#', it.name || 'App');
-    });
-    card.addEventListener('keydown', function (e) {
-      if (e.keyCode === 13 || e.which === 13) {
-        e.preventDefault();
-        showPasswordModal(it.apk_url || '#', it.name || 'App');
-      }
-    });
 
     // === ICON: Bold initials + random emoji background ===
     var iconWrap = document.createElement('div');
@@ -643,13 +632,6 @@
     name.className = 'app-card__name';
     name.textContent = appName;
     nameRow.appendChild(name);
-
-    // Lock icon badge
-    var lockBadge = document.createElement('span');
-    lockBadge.className = 'app-card__badge badge-lock';
-    lockBadge.textContent = '🔒';
-    lockBadge.title = 'Cần mật khẩu để tải';
-    nameRow.appendChild(lockBadge);
 
     // File type badge — auto-detect from URL if not set
     var fileType = it.fileType;
@@ -888,6 +870,16 @@
   });
   $btnTheme.addEventListener('click', toggleTheme);
   $btnRetry.addEventListener('click', function () { fetchData(false); });
+
+  /* ---------- LOCK "CẬP NHẬT MỚI" BUTTON WITH PASSWORD ---------- */
+  var $btnUpdates = document.getElementById('btn-updates');
+  if ($btnUpdates) {
+    var updatesUrl = $btnUpdates.href;
+    $btnUpdates.addEventListener('click', function (e) {
+      e.preventDefault();
+      showPasswordModal(updatesUrl, 'Cập nhật mới');
+    });
+  }
 
   /* ============================================================
      D-PAD / REMOTE NAVIGATION (Android TV)
