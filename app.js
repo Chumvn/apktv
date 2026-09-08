@@ -1113,11 +1113,11 @@
   startAutoRefresh();
   setTimeout(showDeviceIndicator, 2000);
 
-  /* ---------- SERVICE WORKER ---------- */
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js').catch(function () { /* ignore */ });
-    });
-  }
+  /* ---------- SERVICE WORKER — DISABLED to prevent caching issues ---------- */
+  // if ('serviceWorker' in navigator) {
+  //   window.addEventListener('load', function () {
+  //     navigator.serviceWorker.register('./sw.js').catch(function () { /* ignore */ });
+  //   });
+  // }
 
 })();
