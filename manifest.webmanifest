@@ -10,14 +10,20 @@
   "categories": ["utilities"],
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%230a0a0b' stroke='%23c6f135' stroke-width='24'/%3E%3Ctext x='256' y='340' text-anchor='middle' font-family='Inter,Arial,sans-serif' font-weight='900' font-size='280' fill='%23c6f135'%3EK%3C/text%3E%3C/svg%3E",
+      "src": "./icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='36' fill='%230a0a0b' stroke='%23c6f135' stroke-width='8'/%3E%3Ctext x='96' y='130' text-anchor='middle' font-family='Inter,Arial,sans-serif' font-weight='900' font-size='108' fill='%23c6f135'%3EK%3C/text%3E%3C/svg%3E",
+      "src": "./icon-192.png",
       "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./logo.svg",
+      "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
     }

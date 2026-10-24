@@ -9,10 +9,11 @@
   <meta name="theme-color" content="#0a0a0b">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="icon" type="image/svg+xml"
-    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0b' stroke='%23c6f135' stroke-width='4'/%3E%3Ctext x='32' y='44' text-anchor='middle' font-family='Inter,Arial,sans-serif' font-weight='900' font-size='36' fill='%23c6f135'%3EK%3C/text%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="./logo.svg?v=3">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png?v=3">
+  <link rel="apple-touch-icon" href="./icon-192.png?v=3">
   <title>KHO APP CHUM</title>
-  <link rel="stylesheet" href="./style.css?v=2.1">
+  <link rel="stylesheet" href="./style.css?v=2.2">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,9 +24,12 @@
   <!-- TOP BAR -->
   <header class="topbar" role="banner">
     <div class="topbar__left">
-      <div class="topbar__logo-text">
-        <span class="logo-chum">KHO</span>
-        <span class="logo-app">APP</span>
+      <div class="brand" aria-label="KHO APP CHUM">
+        <img class="brand__icon" src="./logo.svg?v=3" alt="" width="44" height="44">
+        <span class="brand__text">
+          <span class="brand__top">KHO APP</span>
+          <span class="brand__name">CHUM</span>
+        </span>
       </div>
       <span class="topbar__version">v2.0</span>
     </div>

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- KHO APP CHUM - app icon: isometric "kho" box + download arrow -->
+  <defs>
+    <linearGradient id="kac-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1c1c25"/>
+      <stop offset="1" stop-color="#0a0a0b"/>
+    </linearGradient>
+    <radialGradient id="kac-glow" cx="50%" cy="54%" r="50%">
+      <stop offset="0" stop-color="#c6f135" stop-opacity=".38"/>
+      <stop offset=".6" stop-color="#c6f135" stop-opacity=".08"/>
+      <stop offset="1" stop-color="#c6f135" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="kac-top" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f1ffb0"/>
+      <stop offset="1" stop-color="#d4ff40"/>
+    </linearGradient>
+    <linearGradient id="kac-left" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c6f135"/>
+      <stop offset="1" stop-color="#a6d01c"/>
+    </linearGradient>
+    <linearGradient id="kac-right" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#93b915"/>
+      <stop offset="1" stop-color="#6b880b"/>
+    </linearGradient>
+  </defs>
+
+  <!-- tile -->
+  <rect width="512" height="512" rx="112" fill="url(#kac-bg)"/>
+  <circle cx="256" cy="262" r="236" fill="url(#kac-glow)"/>
+  <rect x="9" y="9" width="494" height="494" rx="103" fill="none" stroke="#c6f135" stroke-width="18"/>
+
+  <!-- sparkles -->
+  <path d="M116 104 Q116 128 140 128 Q116 128 116 152 Q116 128 92 128 Q116 128 116 104Z" fill="#c6f135"/>
+  <path d="M402 96 Q402 112 418 112 Q402 112 402 128 Q402 112 386 112 Q402 112 402 96Z" fill="#f1ffb0"/>
+  <circle cx="404" cy="400" r="9" fill="#c6f135" opacity=".7"/>
+
+  <!-- cube -->
+  <g stroke-linejoin="round" stroke-width="18">
+    <polygon points="126,181 256,256 256,406 126,331" fill="url(#kac-left)" stroke="url(#kac-left)"/>
+    <polygon points="256,256 386,181 386,331 256,406" fill="url(#kac-right)" stroke="url(#kac-right)"/>
+    <polygon points="256,106 386,181 256,256 126,181" fill="url(#kac-top)" stroke="url(#kac-top)"/>
+  </g>
+  <!-- edge grooves -->
+  <path d="M128 182 L256 256 L384 182 M256 256 L256 404" fill="none" stroke="#0e0e12" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- download arrow (perspective on top face) -->
+  <g transform="translate(256 181) scale(1 .577)">
+    <path d="M-22 -74 L22 -74 L22 -8 L62 -8 L0 68 L-62 -8 L-22 -8 Z" fill="#0e0e12" stroke="#0e0e12" stroke-width="12" stroke-linejoin="round"/>
+  </g>
+</svg>
