@@ -1,1116 +1,1166 @@
-/* ============================================================
-   app.js — KHO APP CHUM — Neo-Brutalist Edition
-   Auto-detect device → show appropriate UI
-   ============================================================ */
+/* ===================================================================
+ *  CHUM STORE – Web, Android Mobile & Android TV Store
+ *  - Tự động nhận diện thiết bị chuẩn xác (Android Mobile, Android TV & Web)
+ *  - Danh sách sắp xếp tự động: File nào tải lên sau cùng hiện ở trên cùng
+ *  - Thẻ ứng dụng hiển thị: Tên app, Package Name, Dung lượng (dl), Ngày cập nhật
+ *  - Nhấn vào thẻ là tải & cài đặt luôn (không nút rườm rà)
+ *  - Hỗ trợ D-Pad remote TV mượt mà, nhận APK Wi-Fi (App) / Tải App QR (Web)
+ * =================================================================== */
 (function () {
   'use strict';
 
-  /* ---------- DEVICE DETECTION ----------
-     Detects: 'android-tv' | 'android' | 'ios' | 'pc'
-     Priority: URL override > UA sniffing + screen heuristics
-  */
-  function detectDevice() {
-    var ua = navigator.userAgent || '';
+  /* ===== CONFIGURATION ===== */
+  var CONFIG = {
+    GITHUB_OWNER: 'Chumvn',
+    GITHUB_REPO: 'apktv',
+    RELEASE_TAG: 'V1.0',
+    CACHE_TTL_MS: 10 * 60 * 1000,
+    FETCH_TIMEOUT_MS: 12000
+  };
 
-    // 1) Android TV / Fire TV / Smart TV
-    if (/Android TV|BRAVIA|SmartTV|SMART-TV|GoogleTV|Nexus Player|AFT[A-Z]|Fire TV|Leanback/i.test(ua)) return 'android-tv';
-    // Android without "Mobile" + large landscape = TV
-    if (/Android/i.test(ua) && !/Mobile/i.test(ua)) {
-      if (window.screen && window.screen.width >= 960 && window.screen.width > window.screen.height) return 'android-tv';
+  /* ===== KNOWN PACKAGE NAME MAPPING & INFERENCE ===== */
+  var KNOWN_PACKAGES = {
+    'youtube': 'com.google.android.youtube.tv',
+    'smarttube': 'com.liskovsoft.smarttubetv.beta',
+    'smarttubenext': 'com.liskovsoft.smarttubetv.beta',
+    'stube': 'com.liskovsoft.smarttubetv',
+    'tivimate': 'ar.tvplayer.tv',
+    'ottnavigator': 'studio.scillarium.ottnavigator',
+    'ott': 'studio.scillarium.ottnavigator',
+    'kodi': 'org.xbmc.kodi',
+    'vlc': 'org.videolan.vlc',
+    'mxplayer': 'com.mxtech.videoplayer.ad',
+    'mxpro': 'com.mxtech.videoplayer.pro',
+    'netflix': 'com.netflix.ninja',
+    'spotify': 'com.spotify.tv.android',
+    'vtvgo': 'vn.vtv.vtvgo',
+    'fptplay': 'com.fptplay.activity',
+    'fpt': 'com.fptplay.activity',
+    'vieon': 'vn.vieon.ewales',
+    'tv360': 'com.viettel.tv360',
+    'mytv': 'com.vnpt.mytv.tv',
+    'onplus': 'com.vtvcab.onplus',
+    'galaxyplay': 'com.fimplus.activity',
+    'clip': 'vn.cliptv.tv',
+    'cliptv': 'vn.cliptv.tv',
+    'vtv': 'vn.vtv.vtvgo',
+    'monstertv': 'com.monstertv.player',
+    'xemtv': 'vn.xemtv.live',
+    'bongda': 'vn.bongdatv.live',
+    'sendfiles': 'com.yablio.sendfilestotv',
+    'sfttv': 'com.yablio.sendfilestotv',
+    'cxfile': 'com.cxinventor.file.explorer',
+    'cxexplorer': 'com.cxinventor.file.explorer',
+    'esfile': 'com.estrongs.android.pop',
+    'xplore': 'com.lonelycatgames.Xplore',
+    'solidexplorer': 'pl.solidexplorer2',
+    'mixplorer': 'com.mixplorer',
+    'zarchiver': 'ru.zdevs.zarchiver',
+    'adguard': 'com.adguard.android',
+    'blokada': 'org.blokada.alarm.dnschanger',
+    'warp': 'com.cloudflare.onedotonedotonedotone',
+    '1111': 'com.cloudflare.onedotonedotonedotone',
+    'nordvpn': 'com.nordvpn.android',
+    'expressvpn': 'com.expressvpn.vpn',
+    'protonvpn': 'ch.protonvpn.android',
+    'surfshark': 'com.surfshark.vpnclient.android',
+    'projectivy': 'com.spocky.projengmenu',
+    'flauncher': 'me.efesser.flauncher',
+    'atvlauncher': 'ca.dstudio.atvlauncher.pro',
+    'wolf': 'com.wolf.firelauncher',
+    'halalauncher': 'com.halalauncher.tv',
+    'buttonmapper': 'flar2.homebutton',
+    'tvquickactions': 'dev.vodik7.tvquickactions',
+    'mouse': 'com.fluxii.android.mousetoggle',
+    'CetusPlay': 'com.cetusplay.remoteservice',
+    'zankremote': 'zank.remote',
+    'teamviewer': 'com.teamviewer.quicksupport.market',
+    'anydesk': 'com.anydesk.anydeskandroid',
+    'airdroid': 'com.sand.airdroid',
+    'adb': ' com.cgutman.androidremotedebugger',
+    'shizuku': 'moe.shizuku.privileged.api',
+    'sai': 'com.aefyr.sai',
+    'apkmirror': 'com.apkmirror.helper.prod',
+    'aptoide': 'cm.aptoidetv.pt',
+    'aurora': 'com.aurora.store',
+    'browser': 'com.tvwebbrowser.v22',
+    'tvbro': 'com.phlox.tvwebbrowser',
+    'puffin': 'com.cloudmosa.puffinTV',
+    'jio': 'com.jio.web.androidtv',
+    'chrome': 'com.android.chrome',
+    'firefox': 'org.mozilla.tv.firefox',
+    'brave': 'com.brave.browser',
+    'kiwi': 'com.kiwibrowser.browser',
+    'tiktok': 'com.zhiliaoapp.musically',
+    'facebook': 'com.facebook.katana',
+    'zalo': 'com.zing.zalo',
+    'telegram': 'org.telegram.messenger',
+    'stremio': 'com.stremio.one',
+    'cloudstream': 'com.lagradost.cloudstream3',
+    'hdo': 'com.hdobox.tv',
+    'onstream': 'com.onstream.tv',
+    'filmplus': 'com.filmplus.app',
+    'beetv': 'com.beetv.app',
+    'cinemahd': 'com.cinemahd.v2',
+    'plex': 'com.plexapp.android',
+    'jellyfin': 'org.jellyfin.androidtv',
+    'emby': 'tv.emby.embyatv',
+    'nova': 'org.courville.nova',
+    'justplayer': 'com.brouken.player',
+    'vimu': 'net.gtvbox.videoplayer',
+    'perfectplayer': 'com.niklabs.pp',
+    'iptv': 'ru.iptvremote.android.iptv',
+    'iptvpro': 'ru.iptvremote.android.iptv.pro',
+    'televizo': 'com.ottplay.ottplay',
+    'sparkle': 'se.hedekonsult.sparkle',
+    'implayer': 'com.myiptvonline.implayer',
+    'smarters': 'com.nst.iptvsmarterstvbox',
+    'xciptv': 'com.nathnetwork.xciptv',
+    'lazada': 'com.lazada.android',
+    'shopee': 'com.shopee.vn',
+    'chumstore': 'com.chum.store'
+  };
+
+  /* ===== APP ICON MAPPING ===== */
+  var APP_ICONS = [
+    { keys: ['youtube', 'ytb', 'smarttube', 'stube', 'newpipe', 'revanced'], emoji: '▶️', bg: 'linear-gradient(135deg,#ef4444,#b91c1c)' },
+    { keys: ['tv', 'tivi', 'vtv', 'fpt', 'vieon', 'mytv', 'tv360', 'iptv', 'ott', 'tivimate', 'kodi', 'xemtv', 'monstertv', 'bongda', 'thethao', 'sport', 'live'], emoji: '📺', bg: 'linear-gradient(135deg,#8b5cf6,#6d28d9)' },
+    { keys: ['phim', 'movie', 'cinema', 'netflix', 'stremio', 'cloudstream', 'hdo', 'plex', 'jellyfin', 'film', 'anime', 'sub'], emoji: '🎬', bg: 'linear-gradient(135deg,#ec4899,#be185d)' },
+    { keys: ['music', 'nhac', 'zing', 'spotify', 'mp3', 'sound', 'karaoke', 'radio'], emoji: '🎵', bg: 'linear-gradient(135deg,#10b981,#047857)' },
+    { keys: ['vlc', 'mx', 'player', 'video', 'vimu', 'nova', 'justplayer'], emoji: '🎞️', bg: 'linear-gradient(135deg,#f97316,#c2410c)' },
+    { keys: ['file', 'explorer', 'xplore', 'cx', 'esfile', 'zarchiver', 'sendfiles', 'sfttv', 'ftp', 'usb', 'manager', 'solid', 'mix'], emoji: '📁', bg: 'linear-gradient(135deg,#eab308,#a16207)' },
+    { keys: ['vpn', '1111', 'warp', 'adguard', 'dns', 'proxy', 'block', 'security'], emoji: '🛡️', bg: 'linear-gradient(135deg,#06b6d4,#0e7490)' },
+    { keys: ['browser', 'chrome', 'firefox', 'tvbro', 'puffin', 'web', 'coccoc', 'brave'], emoji: '🌐', bg: 'linear-gradient(135deg,#3b82f6,#1d4ed8)' },
+    { keys: ['launcher', 'atv', 'projectivy', 'wolf', 'flauncher', 'home', 'leanback'], emoji: '🏠', bg: 'linear-gradient(135deg,#6366f1,#4338ca)' },
+    { keys: ['remote', 'mouse', 'chuot', 'key', 'button', 'mapper', 'control', 'adb', 'cast', 'airscreen', 'miracast'], emoji: '🎮', bg: 'linear-gradient(135deg,#14b8a6,#0f766e)' },
+    { keys: ['clean', 'boost', 'ram', 'speed', 'test', 'benchmark', 'cpu', 'aida', 'info', 'tool', 'setting'], emoji: '⚡', bg: 'linear-gradient(135deg,#f59e0b,#b45309)' },
+    { keys: ['store', 'chplay', 'aptoide', 'aurora', 'apk', 'chum'], emoji: '🛍️', bg: 'linear-gradient(135deg,#a855f7,#7e22ce)' },
+    { keys: ['tiktok', 'facebook', 'fb', 'zalo', 'telegram', 'messenger', 'chat', 'social'], emoji: '💬', bg: 'linear-gradient(135deg,#0ea5e9,#0369a1)' }
+  ];
+
+  var DEFAULT_GRADIENTS = [
+    'linear-gradient(135deg,#a3e635,#4d7c0f)',
+    'linear-gradient(135deg,#f59e0b,#b45309)',
+    'linear-gradient(135deg,#10b981,#047857)',
+    'linear-gradient(135deg,#ef4444,#b91c1c)',
+    'linear-gradient(135deg,#8b5cf6,#6d28d9)',
+    'linear-gradient(135deg,#ec4899,#be185d)',
+    'linear-gradient(135deg,#06b6d4,#0e7490)',
+    'linear-gradient(135deg,#f97316,#c2410c)'
+  ];
+
+  /* ===== STATE ===== */
+  var allApps = [];
+  var isLoading = false;
+  var currentFocusIndex = -1;
+  var focusables = [];
+  var savedFilePkgMap = {}; // fileName -> pkgName
+  var activeDownloadFileName = '';
+  var isLanModalOpen = false;
+  var selfUpdateApp = null;
+
+  /* ===== DOM REFS ===== */
+  var dom = {
+    btnRefresh: document.getElementById('btn-refresh'),
+    btnTheme: document.getElementById('btn-theme'),
+    btnLanSend: document.getElementById('btn-lan-send'),
+    skeleton: document.getElementById('skeleton'),
+    cardsGrid: document.getElementById('cards-grid'),
+    emptyState: document.getElementById('empty-state'),
+    errorState: document.getElementById('error-state'),
+    errorMsg: document.getElementById('error-msg'),
+    btnRetry: document.getElementById('btn-retry'),
+    toast: document.getElementById('toast'),
+    dlBanner: document.getElementById('dl-banner'),
+    dlBannerTitle: document.getElementById('dl-banner-title'),
+    dlBannerStats: document.getElementById('dl-banner-stats'),
+    dlBannerFill: document.getElementById('dl-banner-fill'),
+    btnDlCancel: document.getElementById('btn-dl-cancel'),
+    selfUpdateBanner: document.getElementById('self-update-banner'),
+    selfUpdateMsg: document.getElementById('self-update-msg'),
+    btnSelfUpdate: document.getElementById('btn-self-update'),
+    lanOverlay: document.getElementById('lan-overlay'),
+    btnLanClose: document.getElementById('btn-lan-close'),
+    lanQrBox: document.getElementById('lan-qr-box'),
+    lanUrlText: document.getElementById('lan-url-text'),
+    lanStatusText: document.getElementById('lan-status-text'),
+    lanModalIcon: document.getElementById('lan-modal-icon'),
+    lanTitle: document.getElementById('lan-title'),
+    lanModalSub: document.getElementById('lan-modal-sub'),
+    lanStep1: document.getElementById('lan-step-1'),
+    lanStep2: document.getElementById('lan-step-2'),
+    lanStep3: document.getElementById('lan-step-3'),
+    btnWebApkDl: document.getElementById('btn-web-apk-dl')
+  };
+
+  /* ===== ACCURATE DEVICE DETECTION (ANDROID MOBILE vs ANDROID TV vs DESKTOP WEB) ===== */
+  function detectLayout() {
+    // 1. Direct query string override
+    var params = new URLSearchParams(window.location.search);
+    var forced = params.get('layout') || params.get('mode');
+    if (forced === 'tv' || forced === 'android-tv') return 'tv';
+    if (forced === 'mobile' || forced === 'android') return 'mobile';
+    if (forced === 'desktop' || forced === 'web' || forced === 'pc') return 'desktop';
+
+    // 2. Direct query to native Java bridge
+    if (window.ChumNative && typeof window.ChumNative.isAndroidTV === 'function') {
+      try {
+        return window.ChumNative.isAndroidTV() ? 'tv' : 'mobile';
+      } catch (e) { /* ignore */ }
     }
 
-    // 2) iOS (iPhone, iPad, iPod)
-    if (/iPhone|iPod/i.test(ua)) return 'ios';
-    if (/iPad/i.test(ua)) return 'ios';
-    // iPad on iOS 13+ reports as Mac
-    if (/Macintosh/i.test(ua) && 'ontouchstart' in window && navigator.maxTouchPoints > 1) return 'ios';
+    // 3. User-Agent TV signatures
+    var ua = navigator.userAgent.toLowerCase();
+    var isTV = /android tv|smarttv|googletv|crkey|aftb|aftt|aftm|afts|aftkmst|bravia|philipstv|tizen|web0s|webos|netcast|viera|hisense|vidaa|mibox|shield|leanback/i.test(ua);
+    if (isTV) return 'tv';
 
-    // 3) Android phone / tablet
-    if (/Android/i.test(ua)) return 'android';
+    // 4. Mobile & tablet browser detection
+    var isMobileUA = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(ua);
+    if (isMobileUA) return 'mobile';
 
-    // 4) PC (Windows, Mac, Linux, ChromeOS)
-    return 'pc';
+    // 5. Narrow mobile viewport fallback
+    if (window.innerWidth > 0 && window.innerWidth <= 640) return 'mobile';
+
+    // 6. Standard desktop / laptop web browser
+    return 'desktop';
   }
 
-  // Allow URL override: ?mode=android-tv | android | ios | pc
-  var DEVICE_MODE = (function () {
-    var params = new URLSearchParams(window.location.search);
-    var override = params.get('mode');
-    if (override && /^(android-tv|android|ios|pc)$/.test(override)) return override;
-    return detectDevice();
-  })();
-
-  // Layout group: 'tv' for lean-back, 'mobile' for touch, 'desktop' for mouse+keyboard
-  var LAYOUT = (DEVICE_MODE === 'android-tv') ? 'tv' :
-               (DEVICE_MODE === 'android' || DEVICE_MODE === 'ios') ? 'mobile' : 'desktop';
-
-  // Apply body classes immediately
-  document.body.classList.add('is-' + DEVICE_MODE.replace('-', ''));
-  document.body.classList.add('layout-' + LAYOUT);
-  document.documentElement.setAttribute('data-device', DEVICE_MODE);
+  var LAYOUT = detectLayout();
   document.documentElement.setAttribute('data-layout', LAYOUT);
 
-  /* ---------- CONSTANTS ---------- */
-  var GITHUB_API_URL = 'https://api.github.com/repos/Chumvn/apktv/releases/tags/V1.0';
-  var FETCH_TIMEOUT = 15000;
-  var REFRESH_INTERVAL = 300000;
-  var TOAST_DURATION = 2800;
-  var TAB_ALL = 'MỚI NHẤT';
-  var CACHE_KEY = 'chumapp_cache';
-  var CACHE_ETAG_KEY = 'chumapp_etag';
-  var CACHE_TIME_KEY = 'chumapp_cache_time';
-  var CACHE_MAX_AGE = 600000; // 10 phút
-
-  /* ---------- RANDOM EMOJI POOL (all kinds, not just zodiac) ---------- */
-  var EMOJI_POOL = [
-    '🎮', '🎯', '🎪', '🎨', '🎭', '🎬', '🎸', '🎵', '🎹', '🎺',
-    '🏆', '🏅', '🏈', '🏀', '⚽', '🏐', '🏓', '🏸', '🥊', '🏋️',
-    '🚀', '🛸', '🌟', '⭐', '💫', '🌈', '🔥', '💎', '🎩', '👑',
-    '🦁', '🐯', '🐻', '🦊', '🐺', '🦅', '🦋', '🐲', '🦄', '🐬',
-    '🌸', '🌺', '🍀', '🌿', '🌙', '☀️', '⚡', '❄️', '🌊', '🍁',
-    '🎃', '🎄', '🎁', '🎈', '🎉', '🎊', '🧊', '💡', '🔮', '🧲',
-    '🗡️', '🛡️', '⚙️', '🔧', '🔑', '🏠', '🏰', '🗼', '🎡', '🎢',
-    '📱', '💻', '🖥️', '🎥', '📷', '📡', '🔭', '🧬', '🧪', '⚗️',
-    '🍕', '🍔', '🍟', '🌮', '🍩', '🍦', '🎂', '🍪', '🥤', '☕',
-    '🐀', '🐂', '🐅', '🐇', '🐉', '🐍', '🐴', '🐏', '🐒', '🐓', '🐕', '🐖'
-  ];
-
-  /* ---------- GRADIENT COLOR PAIRS ---------- */
-  var COLOR_PAIRS = [
-    ['#c6f135', '#a3e635'], ['#ff2d78', '#ff6b9d'], ['#7c3aed', '#a78bfa'],
-    ['#00d4ff', '#38bdf8'], ['#ff6b35', '#fb923c'], ['#2dd4bf', '#5eead4'],
-    ['#f43f5e', '#fb7185'], ['#8b5cf6', '#c084fc'], ['#06b6d4', '#22d3ee'],
-    ['#eab308', '#facc15'], ['#ec4899', '#f472b6'], ['#10b981', '#34d399'],
-    ['#ef4444', '#f87171'], ['#6366f1', '#818cf8'], ['#14b8a6', '#2dd4bf'],
-    ['#d946ef', '#e879f9'], ['#f97316', '#fb923c'], ['#3b82f6', '#60a5fa'],
-    ['#84cc16', '#a3e635'], ['#e11d48', '#fb7185']
-  ];
-
-  /* ---------- CATEGORY KEYWORDS for auto-classification ---------- */
-  var CATEGORY_RULES = [
-    {
-      cat: 'YouTube / SmartTube',
-      keywords: ['smarttube', 'youtube', 'cobalt', 'tizentube', 'totube']
-    },
-    {
-      cat: 'Xem phim / TV',
-      keywords: ['hdotv', 'hieuga', 'rapphim', 'dailymotion', 'nvc', 'sparkle', 'vlc', 'kiki', 'phim', 'movie', 'cinema', 'film', 'video', 'media', 'player', 'cloudstream', 'stremio', 'chophim', 'cotv', 'dltivi', 'vietplay', 'xem-tv', 'tv365', 'thaitv', 'vtvprime', 'imedia', 'vaxplayer', 'vaxapp', 'tatcaapp']
-    },
-    {
-      cat: 'IPTV',
-      keywords: ['iptv', 'tivimate', 'televizo', 'ott', 'navigator', 'live+channels', 'livechannel', 'live_channel', 'm3u']
-    },
-    {
-      cat: 'Launcher',
-      keywords: ['launcher', 'hometv', 'projectivy', 'appdrawer', 'appsdrawer', 'lm_atv', 'lm_firetv', 'googletv', 'google_tv']
-    },
-    {
-      cat: 'File Manager',
-      keywords: ['file', 'explorer', 'mixplorer', 'x-plore', 'xplore', 'totalcmd', 'total_commander', 'rsfile']
-    },
-    {
-      cat: 'App Store',
-      keywords: ['aptoide', 'apkmirro', 'apkup', 'baostore', 'dlstore', 'emotn', 'hdplaystore', 'mstore', 'ttvstore', 'store']
-    },
-    {
-      cat: 'ADB / Remote',
-      keywords: ['adb', 'remote', 'sendfiles', 'localsend']
-    },
-    {
-      cat: 'Voice / Input',
-      keywords: ['voice', 'supervoice', 'mapvoice', 'dunevoice', 'keyboard', 'input']
-    },
-    {
-      cat: 'Tiện ích',
-      keywords: ['cleaner', 'atvtools', 'button', 'mapper', 'remapper', 'quickaction', 'orientation', 'ferrari', 'downloader', 'sai', 'ntp', 'reboot', 'coreelec', 'tool', 'adguard', 'aida64', 'tiktok', 'imou', 'net.cang', 'volumeboost', 'getout', 'tizen', 'vproject']
+  // Authoritative callback callable from MainActivity.java
+  window.setDeviceLayout = function (layout) {
+    if (layout === 'tv' || layout === 'mobile' || layout === 'desktop') {
+      LAYOUT = layout;
+      document.documentElement.setAttribute('data-layout', layout);
+      updateGridColumns();
+      rebuildFocusables();
     }
-  ];
+  };
 
-  /* ---------- SMART NAME FORMATTING ---------- */
-  function formatAppName(baseName) {
-    var name = baseName
-      .replace(/[-_]+/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-    name = name.replace(/\b\w/g, function (c) { return c.toUpperCase(); });
-    name = name
-      .replace(/\bV(\d)/gi, 'v$1')
-      .replace(/\bMod\b/gi, 'Mod')
-      .replace(/\bPremium\b/gi, 'Premium')
-      .replace(/\bPro\b/gi, 'Pro')
-      .replace(/\bPatched\b/gi, 'Patched')
-      .replace(/\bDonate\b/gi, 'Donate')
-      .replace(/\bBeta\b/gi, 'Beta')
-      .replace(/\bSilver\b/gi, 'Silver');
-    return name;
+  /* ===== NATIVE PACKAGE SYNC ===== */
+  function syncNativePackages() {
+    if (!window.ChumNative) return;
+    try {
+      var rawFileMap = window.ChumNative.getSavedFilePackageMapJson();
+      if (rawFileMap) {
+        savedFilePkgMap = JSON.parse(rawFileMap) || {};
+      }
+    } catch (e) { /* ignore */ }
   }
 
-  /* ---------- GET APP INITIALS (bold text on icon) ---------- */
-  function getAppInitials(appName) {
-    if (!appName) return '?';
-    // Try to get initials from words (max 2-3 chars)
-    var words = appName.replace(/[^a-zA-Z0-9\s]/g, '').trim().split(/\s+/);
-    if (words.length >= 2) {
-      return (words[0][0] + words[1][0]).toUpperCase();
+  /* ===== CACHE STORAGE ===== */
+  var CACHE_KEY = 'chum_store_apps_cache_v8';
+
+  function getCachedData(allowExpired) {
+    try {
+      var raw = localStorage.getItem(CACHE_KEY);
+      if (!raw) return null;
+      var obj = JSON.parse(raw);
+      if (!obj || !obj.ts || !Array.isArray(obj.assets)) return null;
+      if (!allowExpired && (Date.now() - obj.ts > CONFIG.CACHE_TTL_MS)) return null;
+      return obj.assets;
+    } catch (e) {
+      return null;
     }
-    // Single word: take first 2 characters
-    return appName.substring(0, 2).toUpperCase();
   }
 
-  /* ---------- HASH-BASED RANDOM ASSIGNMENT ---------- */
+  function setCachedData(assets) {
+    try {
+      var payload = {
+        ts: Date.now(),
+        assets: assets
+      };
+      localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
+    } catch (e) { /* quota exceeded */ }
+  }
+
+  /* ===== STRING HELPERS ===== */
+  function normalizeStr(str) {
+    if (!str) return '';
+    return str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+  }
+
+  function cleanAppName(filename) {
+    var name = filename.replace(/\.(apk|xapk|apks|apkm)$/i, '');
+    name = name.replace(/[-_]+/g, ' ').trim();
+    name = name.replace(/\bv?\d+(\.\d+)+[a-z0-9._-]*\b/gi, '').trim();
+    name = name.replace(/\b(release|debug|signed|unsigned|mod|apk|tv|android|beta|premium|vip|pro)\b/gi, '').trim();
+    name = name.replace(/\s{2,}/g, ' ');
+    if (!name) name = filename.replace(/\.(apk|xapk|apks|apkm)$/i, '');
+    return name.split(' ').map(function (w) {
+      return w.charAt(0).toUpperCase() + w.slice(1);
+    }).join(' ');
+  }
+
+  function formatBytes(bytes) {
+    if (!bytes || bytes === 0) return '0 MB';
+    var mb = bytes / (1024 * 1024);
+    if (mb < 1) {
+      var kb = bytes / 1024;
+      return kb.toFixed(0) + ' KB';
+    }
+    return mb.toFixed(1) + ' MB';
+  }
+
+  function formatDate(isoStr) {
+    if (!isoStr) return '';
+    try {
+      var d = new Date(isoStr);
+      if (isNaN(d.getTime())) return '';
+      var day = ('0' + d.getDate()).slice(-2);
+      var month = ('0' + (d.getMonth() + 1)).slice(-2);
+      var year = d.getFullYear();
+      return day + '/' + month + '/' + year;
+    } catch (e) {
+      return '';
+    }
+  }
+
+  /* ===== PACKAGE NAME RESOLUTION ===== */
+  function resolvePackageName(fileName, cleanName) {
+    // 1. Check if native bridge extracted and saved real Android package name from APK
+    if (savedFilePkgMap && savedFilePkgMap[fileName]) {
+      return savedFilePkgMap[fileName];
+    }
+
+    var fnNorm = normalizeStr(fileName).replace(/[^a-z0-9]/g, '');
+    var cleanNorm = normalizeStr(cleanName).replace(/[^a-z0-9]/g, '');
+
+    // 2. Direct dictionary matching
+    for (var k in KNOWN_PACKAGES) {
+      if (KNOWN_PACKAGES.hasOwnProperty(k)) {
+        if (fnNorm.indexOf(k) !== -1 || cleanNorm.indexOf(k) !== -1) {
+          return KNOWN_PACKAGES[k];
+        }
+      }
+    }
+
+    // 3. Reverse infer from package format if filename contains dots
+    var dotMatch = fileName.match(/([a-zA-Z][a-zA-Z0-9_]*\.[a-zA-Z][a-zA-Z0-9_]*\.[a-zA-Z0-9_.]+)/);
+    if (dotMatch && dotMatch[1]) {
+      return dotMatch[1];
+    }
+
+    // 4. Default clean package slug
+    var slug = normalizeStr(cleanName)
+      .replace(/[^a-z0-9]/g, '')
+      .slice(0, 16);
+    if (!slug) slug = 'app';
+    return 'com.chum.' + slug;
+  }
+
+  /* ===== ICON GENERATOR ===== */
   function hashString(str) {
     var hash = 0;
     for (var i = 0; i < str.length; i++) {
-      var char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
+      hash = ((hash << 5) - hash) + str.charCodeAt(i);
+      hash |= 0;
     }
     return Math.abs(hash);
   }
 
-  function getRandomEmoji(appName) {
-    var index = hashString(appName) % EMOJI_POOL.length;
-    return EMOJI_POOL[index];
-  }
+  function getAppIconData(filename, cleanName) {
+    var searchStr = normalizeStr(cleanName + ' ' + filename);
 
-  function getRandomColors(appName) {
-    var index = hashString(appName + '_color') % COLOR_PAIRS.length;
-    return COLOR_PAIRS[index];
-  }
-
-  /* ---------- AUTO-CLASSIFY CATEGORY ---------- */
-  function classifyApp(fileName) {
-    var lower = fileName.toLowerCase();
-    for (var i = 0; i < CATEGORY_RULES.length; i++) {
-      var rule = CATEGORY_RULES[i];
-      for (var k = 0; k < rule.keywords.length; k++) {
-        if (lower.indexOf(rule.keywords[k]) !== -1) {
-          return rule.cat;
+    for (var i = 0; i < APP_ICONS.length; i++) {
+      var entry = APP_ICONS[i];
+      for (var j = 0; j < entry.keys.length; j++) {
+        if (searchStr.indexOf(entry.keys[j]) !== -1) {
+          return { text: entry.emoji, bg: entry.bg, isEmoji: true };
         }
       }
     }
-    return 'Khác';
-  }
 
-  /* ---------- DOM REFERENCES ---------- */
-  var $searchInput = document.getElementById('search-input');
-  var $btnRefresh = document.getElementById('btn-refresh');
-  var $btnTheme = document.getElementById('btn-theme');
-  var $statusLine = document.getElementById('status-line');
-  var $tabsBar = document.getElementById('tabs-bar');
-  var $skeleton = document.getElementById('skeleton');
-  var $cardsGrid = document.getElementById('cards-grid');
-  var $emptyState = document.getElementById('empty-state');
-  var $errorState = document.getElementById('error-state');
-  var $btnRetry = document.getElementById('btn-retry');
-  var $toast = document.getElementById('toast');
-
-  /* ---------- STATE ---------- */
-  var rawData = [];
-  var flatItems = [];
-  var categories = [];
-  var activeTab = TAB_ALL;
-  var searchQuery = '';
-  var toastTimer = null;
-  var refreshTimer = null;
-
-  /* ---------- THEME ---------- */
-  function initTheme() {
-    var saved = localStorage.getItem('kho-theme');
-    if (saved) document.documentElement.setAttribute('data-theme', saved);
-  }
-  function toggleTheme() {
-    var current = document.documentElement.getAttribute('data-theme');
-    var next = current === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('kho-theme', next);
-  }
-  initTheme();
-
-  /* ---------- HELPERS ---------- */
-  function setStatus(msg) {
-    $statusLine.textContent = msg;
-  }
-
-  function showToast(msg) {
-    $toast.textContent = msg;
-    $toast.style.display = '';
-    $toast.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(dismissToast, TOAST_DURATION);
-  }
-
-  function dismissToast() {
-    $toast.classList.remove('show');
-    clearTimeout(toastTimer);
-    setTimeout(function () { $toast.style.display = 'none'; }, 300);
-  }
-
-  function timeStr() {
-    var d = new Date();
-    return d.getHours().toString().padStart(2, '0') + ':' +
-      d.getMinutes().toString().padStart(2, '0') + ':' +
-      d.getSeconds().toString().padStart(2, '0');
-  }
-
-  /* ---------- FORMAT FILE SIZE ---------- */
-  function formatSize(bytes) {
-    if (!bytes) return '';
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / 1048576).toFixed(1) + ' MB';
-  }
-
-  /* ---------- FORMAT DATE ---------- */
-  function formatDate(dateStr) {
-    if (!dateStr) return '';
-    var d = new Date(dateStr);
-    var day = d.getDate().toString().padStart(2, '0');
-    var month = (d.getMonth() + 1).toString().padStart(2, '0');
-    var year = d.getFullYear();
-    var hours = d.getHours().toString().padStart(2, '0');
-    var mins = d.getMinutes().toString().padStart(2, '0');
-    return day + '/' + month + '/' + year + ' ' + hours + ':' + mins;
-  }
-
-  /* ---------- TRANSFORM GITHUB ASSETS → AUTO-CATEGORIZED DATA ---------- */
-  function transformAssets(assets) {
-    var catMap = {};
-    var catOrder = ['YouTube / SmartTube', 'Xem phim / TV', 'IPTV', 'Launcher', 'File Manager', 'App Store', 'Tiện ích', 'ADB / Remote', 'Voice / Input', 'Khác'];
-
-    for (var i = 0; i < assets.length; i++) {
-      var asset = assets[i];
-      var fileName = asset.name || '';
-
-      // Extract file extension (any type)
-      var extMatch = fileName.match(/\.([a-zA-Z0-9]+)$/i);
-      if (!extMatch) continue; // skip files without extension
-
-      var fileExt = extMatch[1].toUpperCase();
-      var baseName = fileName.replace(/\.[a-zA-Z0-9]+$/i, '');
-      var catName = classifyApp(baseName);
-      var appName = formatAppName(baseName);
-
-      if (!catMap[catName]) catMap[catName] = [];
-      catMap[catName].push({
-        name: appName,
-        desc: fileName,
-        apk_url: asset.browser_download_url,
-        size: asset.size,
-        updated_at: asset.updated_at,
-        download_count: asset.download_count || 0,
-        fileType: fileExt
-      });
+    var words = cleanName.split(/\s+/).filter(Boolean);
+    var initials = '';
+    if (words.length >= 2) {
+      initials = (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
+    } else if (words.length === 1 && words[0].length >= 2) {
+      initials = words[0].slice(0, 2).toUpperCase();
+    } else {
+      initials = (cleanName.charAt(0) || 'A').toUpperCase();
     }
 
-    var result = [];
-    for (var c = 0; c < catOrder.length; c++) {
-      if (catMap[catOrder[c]]) {
-        result.push({ category: catOrder[c], items: catMap[catOrder[c]] });
-      }
-    }
-    for (var key in catMap) {
-      if (catOrder.indexOf(key) === -1) {
-        result.push({ category: key, items: catMap[key] });
-      }
-    }
-    return result;
+    var bg = DEFAULT_GRADIENTS[hashString(filename) % DEFAULT_GRADIENTS.length];
+    return { text: initials, bg: bg, isEmoji: false };
   }
 
-  /* ---------- CACHE HELPERS ---------- */
-  function getCachedData() {
-    try {
-      var cached = localStorage.getItem(CACHE_KEY);
-      var cacheTime = parseInt(localStorage.getItem(CACHE_TIME_KEY) || '0', 10);
-      if (cached && (Date.now() - cacheTime < CACHE_MAX_AGE)) {
-        return JSON.parse(cached);
-      }
-    } catch (e) { /* ignore */ }
-    return null;
-  }
+  /* ===== FETCH & PROCESS DATA ===== */
+  function fetchApps(forceRefresh) {
+    if (isLoading) return;
+    isLoading = true;
 
-  function setCachedData(data, etag) {
-    try {
-      localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-      localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
-      if (etag) localStorage.setItem(CACHE_ETAG_KEY, etag);
-    } catch (e) { /* quota exceeded, ignore */ }
-  }
+    if (dom.btnRefresh) dom.btnRefresh.classList.add('spinning');
+    dom.errorState.style.display = 'none';
 
-  /* ---------- FETCH DATA ---------- */
-  function fetchData(isAutoRefresh) {
-    // Try cache first for instant load
-    if (!isAutoRefresh) {
+    if (!forceRefresh) {
       var cached = getCachedData();
-      if (cached) {
-        var categorized = transformAssets(cached);
-        processData(categorized, false);
-        showToast('⚡ Tải từ cache • ' + flatItems.length + ' ứng dụng');
-        // Still fetch in background to update
-        fetchFromAPI(true);
+      if (cached && cached.length > 0) {
+        processRawAssets(cached);
+        isLoading = false;
+        if (dom.btnRefresh) dom.btnRefresh.classList.remove('spinning');
         return;
       }
-      $skeleton.style.display = '';
-      $cardsGrid.style.display = 'none';
-      $emptyState.style.display = 'none';
-      $errorState.style.display = 'none';
-      setStatus('Đang tải dữ liệu...');
     }
 
-    fetchFromAPI(isAutoRefresh);
-  }
+    showSkeleton();
 
-  function fetchFromAPI(isAutoRefresh) {
+    var apiUrl = 'https://api.github.com/repos/' + CONFIG.GITHUB_OWNER + '/' + CONFIG.GITHUB_REPO + '/releases/tags/' + CONFIG.RELEASE_TAG;
+
     var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     var signal = controller ? controller.signal : undefined;
-    var timer = setTimeout(function () { if (controller) controller.abort(); }, FETCH_TIMEOUT);
+    var timeoutId = null;
 
-    var headers = { 'Accept': 'application/vnd.github.v3+json' };
-    var savedEtag = localStorage.getItem(CACHE_ETAG_KEY);
-    if (isAutoRefresh && savedEtag) {
-      headers['If-None-Match'] = savedEtag;
+    if (controller) {
+      timeoutId = setTimeout(function () {
+        controller.abort();
+      }, CONFIG.FETCH_TIMEOUT_MS);
     }
 
-    fetch(GITHUB_API_URL, { signal: signal, headers: headers })
+    fetch(apiUrl, {
+      signal: signal,
+      headers: { 'Accept': 'application/vnd.github.v3+json' }
+    })
       .then(function (res) {
-        clearTimeout(timer);
-        // 304 Not Modified — data unchanged, use cache
-        if (res.status === 304) {
-          localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
-          if (!isAutoRefresh) setStatus('🔄 Dữ liệu chưa thay đổi • ' + flatItems.length + ' ứng dụng');
-          return null;
-        }
+        if (timeoutId) clearTimeout(timeoutId);
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        var etag = res.headers.get('ETag') || '';
-        return res.json().then(function (data) { return { data: data, etag: etag }; });
+        return res.json();
       })
-      .then(function (result) {
-        if (!result) return; // 304
-        var assets = result.data.assets || [];
-        setCachedData(assets, result.etag);
-        var categorized = transformAssets(assets);
-        processData(categorized, isAutoRefresh);
-        if (!isAutoRefresh) {
-          showToast('✅ Đã tải ' + flatItems.length + ' ứng dụng');
+      .then(function (data) {
+        isLoading = false;
+        if (dom.btnRefresh) dom.btnRefresh.classList.remove('spinning');
+        if (!data || !Array.isArray(data.assets)) {
+          throw new Error('Dữ liệu release không hợp lệ');
         }
+        setCachedData(data.assets);
+        processRawAssets(data.assets);
+        showToast('✅ Đã đồng bộ kho ứng dụng');
       })
       .catch(function (err) {
-        clearTimeout(timer);
-        // If fetch fails but we have cache, use it
-        try {
-          var fallback = localStorage.getItem(CACHE_KEY);
-          if (fallback && !flatItems.length) {
-            var categorized = transformAssets(JSON.parse(fallback));
-            processData(categorized, isAutoRefresh);
-            showToast('⚠️ Offline — dùng dữ liệu cache');
-            return;
-          }
-        } catch (e) { /* ignore */ }
-        if (!flatItems.length) showError(err.message);
-      });
-  }
-
-  function processData(json, isAutoRefresh) {
-    rawData = json;
-    flatItems = [];
-    categories = [];
-
-    for (var c = 0; c < json.length; c++) {
-      var cat = json[c];
-      if (cat.category && categories.indexOf(cat.category) === -1) {
-        categories.push(cat.category);
-      }
-      if (cat.items) {
-        for (var i = 0; i < cat.items.length; i++) {
-          flatItems.push(Object.assign({}, cat.items[i], { _category: cat.category, _uid: cat.category + '|' + i }));
+        isLoading = false;
+        if (dom.btnRefresh) dom.btnRefresh.classList.remove('spinning');
+        var cached = getCachedData(true);
+        if (cached && cached.length > 0) {
+          processRawAssets(cached);
+          showToast('⚠️ Đang dùng dữ liệu đệm (' + err.message + ')');
+        } else {
+          showErrorState('Không thể tải kho ứng dụng (' + err.message + '). Vui lòng kiểm tra mạng.');
         }
-      }
-    }
-
-    if (!isAutoRefresh) {
-      buildTabs();
-    }
-    applyFilters();
-    $skeleton.style.display = 'none';
-    $cardsGrid.style.display = '';
-    $errorState.style.display = 'none';
-    setStatus('🔄 Cập nhật lúc ' + timeStr() + ' • ' + flatItems.length + ' ứng dụng');
-  }
-
-  function showError(msg) {
-    $skeleton.style.display = 'none';
-    $cardsGrid.style.display = 'none';
-    $emptyState.style.display = 'none';
-    $errorState.style.display = '';
-    document.getElementById('error-msg').textContent = 'Lỗi: ' + msg;
-    setStatus('Lỗi tải dữ liệu');
-  }
-
-  /* ---------- TABS ---------- */
-  function buildTabs() {
-    var frag = document.createDocumentFragment();
-    var allNames = [TAB_ALL].concat(categories);
-
-    for (var i = 0; i < allNames.length; i++) {
-      var btn = document.createElement('button');
-      btn.className = 'tab-btn focusable';
-      btn.setAttribute('role', 'tab');
-      btn.setAttribute('data-nav-group', 'tabs');
-      btn.setAttribute('aria-selected', allNames[i] === activeTab ? 'true' : 'false');
-      btn.setAttribute('tabindex', allNames[i] === activeTab ? '0' : '-1');
-      btn.dataset.category = allNames[i];
-      btn.textContent = allNames[i];
-      frag.appendChild(btn);
-    }
-
-    $tabsBar.innerHTML = '';
-    $tabsBar.appendChild(frag);
-  }
-
-  /* ---------- FILTER / RENDER ---------- */
-  function applyFilters() {
-    var items = flatItems.slice(); // copy
-
-    // For "MỚI NHẤT" tab: sort by updated_at descending (latest first), no grouping
-    if (activeTab === TAB_ALL) {
-      items.sort(function (a, b) {
-        var dateA = a.updated_at ? new Date(a.updated_at).getTime() : 0;
-        var dateB = b.updated_at ? new Date(b.updated_at).getTime() : 0;
-        return dateB - dateA;
       });
-    } else {
-      // category filter
-      items = items.filter(function (it) { return it._category === activeTab; });
-    }
+  }
 
-    // search filter
-    if (searchQuery) {
-      var q = searchQuery.toLowerCase();
-      items = items.filter(function (it) {
-        return (it.name && it.name.toLowerCase().indexOf(q) !== -1) ||
-          (it.desc && it.desc.toLowerCase().indexOf(q) !== -1) ||
-          (it._category && it._category.toLowerCase().indexOf(q) !== -1);
+  function processRawAssets(assets) {
+    syncNativePackages();
+
+    var validExts = ['.apk', '.xapk', '.apks', '.apkm'];
+    var rawList = assets.filter(function (a) {
+      if (!a || !a.name) return false;
+      var lower = a.name.toLowerCase();
+      for (var i = 0; i < validExts.length; i++) {
+        if (lower.indexOf(validExts[i]) !== -1) return true;
+      }
+      return false;
+    });
+
+    selfUpdateApp = null;
+    var items = [];
+
+    for (var i = 0; i < rawList.length; i++) {
+      var a = rawList[i];
+      var lower = a.name.toLowerCase();
+      var cName = cleanAppName(a.name);
+
+      // Check if self-update APK for CHUM STORE
+      if (lower.indexOf('chum-store') !== -1 || lower.indexOf('chum_store') !== -1 || lower.indexOf('chumstore') !== -1) {
+        selfUpdateApp = {
+          name: a.name,
+          cleanName: 'CHUM STORE',
+          sizeFormatted: formatBytes(a.size || 0),
+          dateFormatted: formatDate(a.updated_at || a.created_at),
+          download_url: a.browser_download_url,
+          updated_at: a.updated_at || a.created_at
+        };
+      }
+
+      var pkg = resolvePackageName(a.name, cName);
+
+      items.push({
+        id: a.id || i,
+        name: a.name,
+        cleanName: cName,
+        packageName: pkg,
+        size: a.size || 0,
+        sizeFormatted: formatBytes(a.size || 0),
+        dateFormatted: formatDate(a.updated_at || a.created_at),
+        created_at: a.created_at,
+        updated_at: a.updated_at || a.created_at,
+        download_url: a.browser_download_url,
+        iconData: getAppIconData(a.name, cName)
       });
     }
 
-    if (activeTab === TAB_ALL) {
-      renderFlatList(items);
-    } else {
-      renderCategorySections(items);
-    }
+    // CRITICAL REQUIREMENT: "cái nào tải lên sau cùng hiện trên cùng"
+    // Sort descending by upload/update timestamp: newest upload appears at index 0
+    items.sort(function (a, b) {
+      var tA = new Date(a.updated_at || a.created_at || 0).getTime();
+      var tB = new Date(b.updated_at || b.created_at || 0).getTime();
+      return tB - tA;
+    });
+
+    allApps = items;
+    hideSkeleton();
+    renderCards();
+    checkSelfUpdate();
   }
 
-  /* ---------- RENDER FLAT LIST (for "MỚI NHẤT" tab, sorted by date) ---------- */
-  function renderFlatList(items) {
-    $cardsGrid.innerHTML = '';
-
-    if (items.length === 0) {
-      $emptyState.style.display = '';
-      return;
-    }
-    $emptyState.style.display = 'none';
-
-    var frag = document.createDocumentFragment();
-
-    // Single section with title
-    var section = document.createElement('div');
-    section.className = 'category-section';
-
-    var titleWrap = document.createElement('div');
-    titleWrap.className = 'category-title';
-    var titleH3 = document.createElement('h3');
-    titleH3.textContent = '⏰ Cập nhật gần đây (' + items.length + ')';
-    titleWrap.appendChild(titleH3);
-    section.appendChild(titleWrap);
-
-    var grid = document.createElement('div');
-    grid.className = 'category-grid';
-
-    for (var j = 0; j < items.length; j++) {
-      grid.appendChild(createCard(items[j]));
-    }
-
-    section.appendChild(grid);
-    frag.appendChild(section);
-    $cardsGrid.appendChild(frag);
-  }
-
-  function renderCategorySections(items) {
-    $cardsGrid.innerHTML = '';
-
-    if (items.length === 0) {
-      $emptyState.style.display = '';
-      return;
-    }
-    $emptyState.style.display = 'none';
-
-    var grouped = {};
-    var catOrder = [];
-    for (var i = 0; i < items.length; i++) {
-      var cat = items[i]._category || 'Khác';
-      if (!grouped[cat]) {
-        grouped[cat] = [];
-        catOrder.push(cat);
-      }
-      grouped[cat].push(items[i]);
-    }
-
-    var frag = document.createDocumentFragment();
-
-    for (var c = 0; c < catOrder.length; c++) {
-      var catName = catOrder[c];
-      var catItems = grouped[catName];
-
-      var section = document.createElement('div');
-      section.className = 'category-section';
-
-      var titleWrap = document.createElement('div');
-      titleWrap.className = 'category-title';
-      var titleH3 = document.createElement('h3');
-      titleH3.textContent = catName + ' (' + catItems.length + ')';
-      titleWrap.appendChild(titleH3);
-      section.appendChild(titleWrap);
-
-      var grid = document.createElement('div');
-      grid.className = 'category-grid';
-
-      for (var j = 0; j < catItems.length; j++) {
-        grid.appendChild(createCard(catItems[j]));
-      }
-
-      section.appendChild(grid);
-      frag.appendChild(section);
-    }
-
-    $cardsGrid.appendChild(frag);
-  }
-
-  function createCard(it) {
-    var card = document.createElement('a');
+  /* ===== CARD ELEMENT (THẺ APK ĐƠN GIẢN: TÊN • PACKAGE • DL • NGÀY CẬP NHẬT) ===== */
+  function createCardElement(app, index) {
+    var card = document.createElement('div');
     card.className = 'app-card focusable';
-    card.href = it.apk_url || '#';
-    card.target = '_blank';
-    card.rel = 'noopener';
+    card.setAttribute('role', 'listitem');
     card.setAttribute('tabindex', '0');
+    card.setAttribute('data-nav-group', 'cards');
+    card.setAttribute('data-index', index);
+    card.setAttribute('data-filename', app.name);
+    card.setAttribute('aria-label', app.cleanName + ', ' + app.packageName + ', ' + app.sizeFormatted + ', ' + app.dateFormatted);
 
-    // === ICON: Bold initials + random emoji background ===
-    var iconWrap = document.createElement('div');
-    iconWrap.className = 'app-card__icon-wrap';
+    // 1. Icon Squircle
+    var icon = document.createElement('div');
+    icon.className = 'app-card__icon' + (app.iconData.isEmoji ? ' app-card__icon--emoji' : '');
+    icon.style.background = app.iconData.bg;
+    icon.textContent = app.iconData.text;
 
-    var appName = it.name || 'App';
-    var emoji = getRandomEmoji(appName);
-    var colors = getRandomColors(appName);
-    var initials = getAppInitials(appName);
-
-    var iconEl = document.createElement('div');
-    iconEl.className = 'app-card__icon-box';
-    iconEl.style.background = 'linear-gradient(135deg, ' + colors[0] + ', ' + colors[1] + ')';
-
-    // Emoji decoration (small, top-right corner)
-    var emojiEl = document.createElement('span');
-    emojiEl.className = 'icon-emoji';
-    emojiEl.textContent = emoji;
-    iconEl.appendChild(emojiEl);
-
-    // Bold initials text (center, large)
-    var initialsEl = document.createElement('span');
-    initialsEl.className = 'icon-initials';
-    initialsEl.textContent = initials;
-    iconEl.appendChild(initialsEl);
-
-    iconWrap.appendChild(iconEl);
-    card.appendChild(iconWrap);
-
-    // === INFO ===
+    // 2. Info Block (Tên app, Package Name, Dung lượng, Ngày cập nhật)
     var info = document.createElement('div');
     info.className = 'app-card__info';
 
-    var nameRow = document.createElement('div');
-    nameRow.className = 'app-card__name-row';
-
-    var name = document.createElement('span');
+    // App Name
+    var name = document.createElement('div');
     name.className = 'app-card__name';
-    name.textContent = appName;
-    nameRow.appendChild(name);
+    name.textContent = app.cleanName;
+    name.title = app.name;
 
-    // File type badge — auto-detect from URL if not set
-    var fileType = it.fileType;
-    if (!fileType && it.apk_url) {
-      var extMatch = it.apk_url.match(/\.([a-zA-Z0-9]+)$/i);
-      if (extMatch) fileType = extMatch[1].toUpperCase();
-    }
-    if (fileType) {
-      var badge = document.createElement('span');
-      var ft = fileType.toLowerCase();
-      badge.className = 'app-card__badge badge-' + ft;
-      badge.textContent = fileType;
-      nameRow.appendChild(badge);
-    }
+    // Package Name
+    var pkgEl = document.createElement('div');
+    pkgEl.className = 'app-card__pkg';
+    pkgEl.textContent = '📦 ' + app.packageName;
+    pkgEl.title = 'Package: ' + app.packageName;
 
-    info.appendChild(nameRow);
-
-    if (it.desc) {
-      var desc = document.createElement('div');
-      desc.className = 'app-card__desc';
-      desc.textContent = it.desc;
-      info.appendChild(desc);
-    }
-
-    // Meta: download count + size + date
+    // Meta line: Dung lượng (dl) + Ngày cập nhật
     var meta = document.createElement('div');
     meta.className = 'app-card__meta';
-    var parts = [];
-    // Download count
-    var dlCount = it.download_count || 0;
-    parts.push('⬇ ' + formatDownloadCount(dlCount) + ' lượt tải');
-    if (it.size) parts.push(formatSize(it.size));
-    if (it.updated_at) parts.push(formatDate(it.updated_at));
-    if (parts.length > 0) {
-      meta.textContent = parts.join(' • ');
-      info.appendChild(meta);
+
+    var bSize = document.createElement('span');
+    bSize.className = 'badge-size';
+    bSize.textContent = '💾 ' + app.sizeFormatted;
+    meta.appendChild(bSize);
+
+    if (app.dateFormatted) {
+      var bDate = document.createElement('span');
+      bDate.className = 'badge-date';
+      bDate.textContent = '📅 ' + app.dateFormatted;
+      meta.appendChild(bDate);
     }
 
-    // Device tracker info
-    var deviceInfo = getDownloadDevices(appName);
-    if (deviceInfo.length > 0) {
-      var devRow = document.createElement('div');
-      devRow.className = 'app-card__devices';
-      devRow.innerHTML = '📱 ' + deviceInfo.map(function(d) {
-        return '<span class="device-chip">' + d.icon + ' ' + d.label + '</span>';
-      }).join(' ');
-      info.appendChild(devRow);
-    }
+    info.appendChild(name);
+    info.appendChild(pkgEl);
+    info.appendChild(meta);
 
+    card.appendChild(icon);
     card.appendChild(info);
+
+    // REQUIREMENT: Nhấn vào là tải luôn! Không hiện chữ cài đặt hoặc mở
+    card.addEventListener('click', function (e) {
+      e.preventDefault();
+      triggerDownload(app);
+    });
+
     return card;
   }
 
-  /* ---------- FORMAT DOWNLOAD COUNT ---------- */
-  function formatDownloadCount(count) {
-    if (count >= 1000000) return (count / 1000000).toFixed(1) + 'M';
-    if (count >= 1000) return (count / 1000).toFixed(1) + 'K';
-    return count.toString();
+  function renderCards() {
+    dom.cardsGrid.innerHTML = '';
+
+    if (allApps.length === 0) {
+      dom.cardsGrid.style.display = 'none';
+      dom.emptyState.style.display = '';
+      rebuildFocusables();
+      return;
+    }
+
+    dom.emptyState.style.display = 'none';
+    dom.cardsGrid.style.display = '';
+
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < allApps.length; i++) {
+      frag.appendChild(createCardElement(allApps[i], i));
+    }
+    dom.cardsGrid.appendChild(frag);
+    rebuildFocusables();
   }
 
-  /* ---------- DEVICE DOWNLOAD TRACKING ---------- */
-  var DOWNLOAD_DEVICES_KEY = 'chumapp_download_devices';
+  /* ===== 1-CLICK NATIVE IN-APP DOWNLOAD & INSTALL ===== */
+  function triggerDownload(app) {
+    if (!app || !app.download_url) return;
 
-  function getDownloadDevices(appName) {
+    activeDownloadFileName = app.name;
+
+    if (window.ChumNative && typeof window.ChumNative.downloadAndInstall === 'function') {
+      try {
+        if (dom.dlBanner) {
+          dom.dlBanner.style.display = 'block';
+          dom.dlBannerTitle.textContent = '⬇️ Đang tải: ' + app.cleanName;
+          dom.dlBannerStats.textContent = '0% • ' + app.sizeFormatted;
+          dom.dlBannerFill.style.width = '0%';
+        }
+        window.ChumNative.downloadAndInstall(app.download_url, app.name, app.cleanName, true);
+        return;
+      } catch (e) { /* fallback */ }
+    }
+
+    showToast('⬇️ Đang tải: ' + app.cleanName + (app.sizeFormatted ? ' (' + app.sizeFormatted + ')' : ''));
     try {
-      var all = JSON.parse(localStorage.getItem(DOWNLOAD_DEVICES_KEY) || '{}');
-      return all[appName] || [];
-    } catch (e) { return []; }
+      var a = document.createElement('a');
+      a.href = app.download_url;
+      a.setAttribute('download', app.name || '');
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (dlErr) {
+      window.location.href = app.download_url;
+    }
   }
 
-  function trackDownloadDevice(appName) {
+  function formatSpeed(bps) {
+    if (!bps || bps <= 0) return '0 KB/s';
+    var mb = bps / (1024 * 1024);
+    if (mb >= 1) return mb.toFixed(1) + ' MB/s';
+    return Math.round(bps / 1024) + ' KB/s';
+  }
+
+  // Native progress callbacks: (fileName, percent, downloadedBytes, totalBytes, speedBps, status)
+  window.onNativeDownloadProgress = function (fileName, progress, downloadedBytes, totalBytes, speedBps, status) {
+    if (!dom.dlBanner) return;
+    var pct = Math.min(100, Math.max(0, Number(progress) || 0));
+
+    if (status === 'cancelled') {
+      dom.dlBanner.style.display = 'none';
+      return;
+    }
+    if (status && status.indexOf('error:') === 0) {
+      dom.dlBanner.style.display = 'none';
+      showToast('❌ Tải thất bại: ' + status.slice(6));
+      return;
+    }
+    if (status === 'completed') {
+      dom.dlBanner.style.display = 'block';
+      dom.dlBannerTitle.textContent = '⚡ Đang mở trình cài đặt Android...';
+      dom.dlBannerStats.textContent = '100% • Sẵn sàng';
+      dom.dlBannerFill.style.width = '100%';
+      setTimeout(function () {
+        if (dom.dlBanner) dom.dlBanner.style.display = 'none';
+      }, 3500);
+      showToast('⚡ Mở cài đặt: ' + cleanAppName(fileName));
+      return;
+    }
+    if (status === 'extracting_xapk') {
+      dom.dlBanner.style.display = 'block';
+      dom.dlBannerTitle.textContent = '📦 Đang giải nén: ' + cleanAppName(fileName);
+      dom.dlBannerStats.textContent = '100% • Đang chuẩn bị cài đặt...';
+      dom.dlBannerFill.style.width = '100%';
+      return;
+    }
+
+    dom.dlBanner.style.display = 'block';
+    dom.dlBannerTitle.textContent = '⬇️ Đang tải: ' + cleanAppName(fileName);
+    var sizeText = (totalBytes > 0)
+      ? (formatBytes(downloadedBytes) + ' / ' + formatBytes(totalBytes))
+      : formatBytes(downloadedBytes);
+    dom.dlBannerStats.textContent = pct + '% • ' + formatSpeed(speedBps) + (sizeText ? ' (' + sizeText + ')' : '');
+    dom.dlBannerFill.style.width = pct + '%';
+  };
+
+  window.onNativeDownloadComplete = function (fileName) {
+    if (dom.dlBanner) {
+      dom.dlBannerTitle.textContent = '⚡ Đang mở trình cài đặt Android...';
+      dom.dlBannerStats.textContent = '100% • Sẵn sàng';
+      dom.dlBannerFill.style.width = '100%';
+      setTimeout(function () {
+        if (dom.dlBanner) dom.dlBanner.style.display = 'none';
+      }, 3500);
+    }
+    showToast('⚡ Mở cài đặt: ' + cleanAppName(fileName));
+  };
+
+  window.onNativeDownloadFailed = function (fileName, errorMsg) {
+    if (dom.dlBanner) {
+      dom.dlBanner.style.display = 'none';
+    }
+    showToast('❌ Tải thất bại: ' + errorMsg);
+  };
+
+  /* ===== SELF-UPDATE CHECK ===== */
+  function checkSelfUpdate() {
+    if (!selfUpdateApp || !dom.selfUpdateBanner) return;
+    if (!window.ChumNative || typeof window.ChumNative.getSelfAppInfoJson !== 'function') {
+      dom.selfUpdateBanner.style.display = 'none';
+      return;
+    }
     try {
-      var all = JSON.parse(localStorage.getItem(DOWNLOAD_DEVICES_KEY) || '{}');
-      if (!all[appName]) all[appName] = [];
-      var deviceLabel = DEVICE_INFO[DEVICE_MODE] || DEVICE_INFO['pc'];
-      var now = new Date().toLocaleString('vi-VN');
-      // Check if this device type already recorded
-      var exists = false;
-      for (var i = 0; i < all[appName].length; i++) {
-        if (all[appName][i].mode === DEVICE_MODE) {
-          all[appName][i].count = (all[appName][i].count || 1) + 1;
-          all[appName][i].lastTime = now;
-          exists = true;
+      var selfInfo = JSON.parse(window.ChumNative.getSelfAppInfoJson() || '{}');
+      var assetTime = new Date(selfUpdateApp.updated_at || 0).getTime();
+      var installedTime = selfInfo.lastUpdateTime || 0;
+      if (assetTime > 0 && installedTime > 0 && assetTime > installedTime + 120000) {
+        dom.selfUpdateBanner.style.display = 'flex';
+        if (dom.selfUpdateMsg) {
+          dom.selfUpdateMsg.textContent = 'Đã có bản CHUM STORE mới (' + selfUpdateApp.dateFormatted + ' • ' + selfUpdateApp.sizeFormatted + ') trên kho!';
+        }
+      } else {
+        dom.selfUpdateBanner.style.display = 'none';
+      }
+    } catch (e) {
+      dom.selfUpdateBanner.style.display = 'none';
+    }
+  }
+
+  /* ===== LAN WI-FI APK RECEIVER (APP) & QR APP DOWNLOAD (WEB) ===== */
+  var qrcodeInstance = null;
+  function renderQr(text, fallbackEmoji) {
+    if (!dom.lanQrBox) return;
+    if (text && typeof QRCode !== 'undefined') {
+      try {
+        dom.lanQrBox.innerHTML = '';
+        qrcodeInstance = new QRCode(dom.lanQrBox, {
+          text: text,
+          width: 142,
+          height: 142,
+          colorDark: '#000000',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+        return;
+      } catch (qrErr) {
+        if (dom.lanStatusText) dom.lanStatusText.textContent = '⚠️ ' + qrErr.message;
+      }
+    }
+    dom.lanQrBox.innerHTML = '<div style="font-size:2.5rem;color:#000;">' + (fallbackEmoji || '📡') + '</div>';
+  }
+
+  function getWebApkUrl() {
+    if (selfUpdateApp && selfUpdateApp.download_url) {
+      return selfUpdateApp.download_url;
+    }
+    try {
+      return new URL('./CHUM-STORE.apk', window.location.href).href;
+    } catch (e) {
+      return 'https://github.com/Chumvn/apktv/releases/download/V1.0/CHUM-STORE.apk';
+    }
+  }
+
+  function openLanModal() {
+    isLanModalOpen = true;
+    dom.lanOverlay.style.display = 'flex';
+
+    // Web Mode: Show direct App APK download button + QR code
+    if (!window.ChumNative) {
+      var apkUrl = getWebApkUrl();
+      if (dom.lanModalIcon) dom.lanModalIcon.textContent = '📲';
+      if (dom.lanTitle) dom.lanTitle.textContent = 'TẢI APP CHUM STORE (.APK)';
+      if (dom.lanModalSub) dom.lanModalSub.textContent = 'Cài trên Điện thoại & Android TV để cài 1 chạm, tự dọn file APK & Nhận APK Wi-Fi';
+      if (dom.lanStep1) dom.lanStep1.innerHTML = '1️⃣ Quét mã <b>QR bên cạnh</b> bằng camera Điện thoại để tải nhanh trên máy khác.';
+      if (dom.lanStep2) dom.lanStep2.innerHTML = '2️⃣ Hoặc tải file <b>CHUM-STORE.apk</b> trực tiếp từ đường dẫn / nút bên dưới:';
+      if (dom.lanStep3) dom.lanStep3.innerHTML = '3️⃣ Mở file <b>.APK</b> vừa tải để cài đặt app CHUM STORE lên thiết bị.';
+      if (dom.lanUrlText) dom.lanUrlText.textContent = apkUrl;
+      if (dom.btnWebApkDl) {
+        dom.btnWebApkDl.href = apkUrl;
+        dom.btnWebApkDl.style.display = 'inline-flex';
+      }
+      if (dom.lanStatusText) {
+        var meta = selfUpdateApp ? (' (' + selfUpdateApp.sizeFormatted + ')') : '';
+        dom.lanStatusText.textContent = '🟢 Bản cài đặt mới nhất' + meta + ' đã sẵn sàng tải xuống!';
+      }
+      renderQr(apkUrl, '📲');
+      rebuildFocusables();
+      return;
+    }
+
+    // Native App Mode: Embedded LAN Wi-Fi APK Receiver Server
+    if (dom.lanModalIcon) dom.lanModalIcon.textContent = '📡';
+    if (dom.lanTitle) dom.lanTitle.textContent = 'NHẬN FILE APK QUA WI-FI (LAN SEND)';
+    if (dom.lanModalSub) dom.lanModalSub.textContent = 'Gửi bất kỳ file .APK / .XAPK nào từ Điện thoại sang thiết bị này';
+    if (dom.lanStep1) dom.lanStep1.innerHTML = '1️⃣ Kết nối Điện thoại và TV vào <b>cùng một mạng Wi-Fi</b>.';
+    if (dom.lanStep2) dom.lanStep2.innerHTML = '2️⃣ Quét mã QR bên cạnh hoặc mở trình duyệt truy cập:';
+    if (dom.lanStep3) dom.lanStep3.innerHTML = '3️⃣ Chọn file <b>.APK / .XAPK</b> trên điện thoại — TV sẽ tự động nhận và mở bảng cài đặt ngay!';
+    if (dom.btnWebApkDl) dom.btnWebApkDl.style.display = 'none';
+
+    var fullUrl = '';
+    try {
+      if (typeof window.ChumNative.startLanServer === 'function') {
+        fullUrl = window.ChumNative.startLanServer();
+      }
+      if (!fullUrl && typeof window.ChumNative.getLanServerUrl === 'function') {
+        fullUrl = window.ChumNative.getLanServerUrl();
+      }
+    } catch (e) {
+      if (dom.lanStatusText) dom.lanStatusText.textContent = '⚠️ Lỗi: ' + e.message;
+    }
+
+    if (!fullUrl) {
+      var ip = (typeof window.ChumNative.getDeviceIpAddress === 'function') ? window.ChumNative.getDeviceIpAddress() : '';
+      if (ip) {
+        fullUrl = 'http://' + ip + ':8888';
+      }
+    }
+
+    if (fullUrl) {
+      if (dom.lanUrlText) dom.lanUrlText.textContent = fullUrl;
+      if (dom.lanStatusText) {
+        dom.lanStatusText.textContent = '🟢 Server Wi-Fi đang bật. Sẵn sàng nhận file!';
+      }
+      renderQr(fullUrl, '📡');
+    } else {
+      if (dom.lanUrlText) dom.lanUrlText.textContent = 'Chưa kết nối Wi-Fi';
+      if (dom.lanStatusText) {
+        dom.lanStatusText.textContent = '⚠️ Vui lòng kết nối Wi-Fi trên thiết bị để nhận APK.';
+      }
+      renderQr('', '📡');
+    }
+
+    rebuildFocusables();
+  }
+
+  function closeLanModal() {
+    isLanModalOpen = false;
+    dom.lanOverlay.style.display = 'none';
+    if (window.ChumNative && typeof window.ChumNative.stopLanServer === 'function') {
+      try { window.ChumNative.stopLanServer(); } catch (e) { /* ignore */ }
+    }
+    rebuildFocusables();
+  }
+
+  window.onNativeBackPressed = function () {
+    if (isLanModalOpen) {
+      closeLanModal();
+      return true;
+    }
+    return false;
+  };
+
+  /* ===== TOAST NOTIFICATION ===== */
+  var toastTimer = null;
+  function showToast(msg) {
+    if (toastTimer) clearTimeout(toastTimer);
+    dom.toast.textContent = msg;
+    dom.toast.style.display = '';
+    void dom.toast.offsetWidth;
+    dom.toast.classList.add('show');
+
+    toastTimer = setTimeout(function () {
+      dom.toast.classList.remove('show');
+      setTimeout(function () {
+        dom.toast.style.display = 'none';
+      }, 250);
+    }, 2800);
+  }
+
+  /* ===== SKELETON & ERROR STATES ===== */
+  function showSkeleton() {
+    dom.skeleton.style.display = '';
+    dom.cardsGrid.style.display = 'none';
+  }
+
+  function hideSkeleton() {
+    dom.skeleton.style.display = 'none';
+  }
+
+  function showErrorState(msg) {
+    hideSkeleton();
+    dom.cardsGrid.style.display = 'none';
+    dom.emptyState.style.display = 'none';
+    dom.errorMsg.textContent = msg;
+    dom.errorState.style.display = '';
+    rebuildFocusables();
+  }
+
+  /* ===== D-PAD / REMOTE KEYBOARD NAVIGATION (ANDROID TV) ===== */
+  function rebuildFocusables() {
+    if (isLanModalOpen) {
+      focusables = Array.prototype.slice.call(dom.lanOverlay.querySelectorAll('.lan-focusable')).filter(function (el) {
+        return el.offsetParent !== null;
+      });
+      if (focusables.length > 0) {
+        var defaultIdx = (!window.ChumNative && focusables.length > 1) ? 1 : 0;
+        setFocus(defaultIdx);
+      }
+      return;
+    }
+
+    var all = document.querySelectorAll('.focusable');
+    focusables = Array.prototype.slice.call(all).filter(function (el) {
+      return el.offsetParent !== null;
+    });
+
+    if (currentFocusIndex >= focusables.length) {
+      currentFocusIndex = focusables.length - 1;
+    }
+
+    if (LAYOUT === 'tv' && currentFocusIndex < 0 && focusables.length > 0) {
+      // On TV, auto-focus first app card
+      var firstCardIdx = -1;
+      for (var i = 0; i < focusables.length; i++) {
+        if (focusables[i].getAttribute('data-nav-group') === 'cards') {
+          firstCardIdx = i;
           break;
         }
       }
-      if (!exists) {
-        all[appName].push({
-          mode: DEVICE_MODE,
-          icon: deviceLabel.icon,
-          label: deviceLabel.label,
-          count: 1,
-          lastTime: now
-        });
-      }
-      localStorage.setItem(DOWNLOAD_DEVICES_KEY, JSON.stringify(all));
-    } catch (e) { /* ignore */ }
+      setFocus(firstCardIdx >= 0 ? firstCardIdx : 0);
+    }
   }
 
-  /* ---------- PASSWORD MODAL ---------- */
-  var PASSWORD_KEY = '23824';
-  var passwordModalEl = null;
-
-  function createPasswordModal() {
-    if (passwordModalEl) return;
-    
-    var overlay = document.createElement('div');
-    overlay.className = 'pw-overlay';
-    overlay.id = 'pw-overlay';
-    
-    var modal = document.createElement('div');
-    modal.className = 'pw-modal';
-    
-    modal.innerHTML = 
-      '<div class="pw-modal__header">' +
-        '<span class="pw-modal__icon">🔐</span>' +
-        '<h3 class="pw-modal__title">Nhập mật khẩu</h3>' +
-      '</div>' +
-      '<p class="pw-modal__app-name" id="pw-app-name"></p>' +
-      '<input type="password" class="pw-modal__input" id="pw-input" placeholder="Nhập mật khẩu..." autocomplete="off" maxlength="20">' +
-      '<p class="pw-modal__error" id="pw-error" style="display:none">❌ Sai mật khẩu!</p>' +
-      '<div class="pw-modal__buttons">' +
-        '<button class="pw-modal__btn pw-btn-cancel" id="pw-cancel">Hủy</button>' +
-        '<button class="pw-modal__btn pw-btn-ok" id="pw-ok">Mở khóa</button>' +
-      '</div>';
-    
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
-    passwordModalEl = overlay;
-    
-    // Close on overlay click
-    overlay.addEventListener('click', function(e) {
-      if (e.target === overlay) closePasswordModal();
-    });
-    
-    document.getElementById('pw-cancel').addEventListener('click', closePasswordModal);
+  function setFocus(index) {
+    if (index < 0 || index >= focusables.length) return;
+    if (currentFocusIndex >= 0 && currentFocusIndex < focusables.length) {
+      focusables[currentFocusIndex].classList.remove('tv-focused');
+    }
+    currentFocusIndex = index;
+    var el = focusables[currentFocusIndex];
+    el.classList.add('tv-focused');
+    try {
+      el.focus({ preventScroll: true });
+    } catch (e1) {
+      try { el.focus(); } catch (e2) {}
+    }
+    try {
+      el.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+    } catch (e3) {
+      try { el.scrollIntoView(); } catch (e4) {}
+    }
   }
 
-  var pendingDownloadUrl = '';
-  var pendingDownloadName = '';
-
-  function showPasswordModal(url, appName) {
-    createPasswordModal();
-    pendingDownloadUrl = url;
-    pendingDownloadName = appName;
-    
-    document.getElementById('pw-app-name').textContent = '📦 ' + appName;
-    document.getElementById('pw-input').value = '';
-    document.getElementById('pw-error').style.display = 'none';
-    
-    passwordModalEl.classList.add('show');
-    
-    setTimeout(function() {
-      document.getElementById('pw-input').focus();
-    }, 100);
-    
-    // Setup OK button handler
-    var okBtn = document.getElementById('pw-ok');
-    var newOk = okBtn.cloneNode(true);
-    okBtn.parentNode.replaceChild(newOk, okBtn);
-    newOk.addEventListener('click', handlePasswordSubmit);
-    
-    // Enter key handler
-    var input = document.getElementById('pw-input');
-    var newInput = input.cloneNode(true);
-    input.parentNode.replaceChild(newInput, input);
-    newInput.addEventListener('keydown', function(e) {
-      if (e.keyCode === 13) {
-        e.preventDefault();
-        handlePasswordSubmit();
-      }
-    });
-    setTimeout(function() { newInput.focus(); }, 150);
-  }
-
-  function handlePasswordSubmit() {
-    var input = document.getElementById('pw-input');
-    var errorEl = document.getElementById('pw-error');
-    
-    if (input.value === PASSWORD_KEY) {
-      // Correct password — save URL before closing (close clears it)
-      var url = pendingDownloadUrl;
-      var appName = pendingDownloadName;
-      closePasswordModal();
-      showToast('✅ Đã mở khóa — Đang tải ' + appName);
-      window.open(url, '_blank');
+  var cachedGridCols = 1;
+  function updateGridColumns() {
+    if (LAYOUT === 'tv') {
+      cachedGridCols = window.innerWidth >= 1200 ? 3 : 2;
     } else {
-      // Wrong password
-      errorEl.style.display = '';
-      input.value = '';
-      input.focus();
-      // Shake animation
-      var modal = passwordModalEl.querySelector('.pw-modal');
-      modal.classList.add('shake');
-      setTimeout(function() { modal.classList.remove('shake'); }, 500);
+      var w = window.innerWidth;
+      if (w >= 1100) cachedGridCols = 3;
+      else if (w >= 720) cachedGridCols = 2;
+      else cachedGridCols = 1;
     }
   }
+  window.addEventListener('resize', updateGridColumns);
+  updateGridColumns();
 
-  function closePasswordModal() {
-    if (passwordModalEl) {
-      passwordModalEl.classList.remove('show');
-    }
-    pendingDownloadUrl = '';
-    pendingDownloadName = '';
+  function getGridColumns() {
+    return cachedGridCols;
   }
 
-  function selectTab(category) {
-    activeTab = category;
-    var tabs = Array.prototype.slice.call($tabsBar.querySelectorAll('.tab-btn'));
-    for (var i = 0; i < tabs.length; i++) {
-      var sel = tabs[i].dataset.category === category;
-      tabs[i].setAttribute('aria-selected', sel ? 'true' : 'false');
-      tabs[i].setAttribute('tabindex', sel ? '0' : '-1');
+  function findGroupIndices(groupName) {
+    var indices = [];
+    for (var i = 0; i < focusables.length; i++) {
+      if (focusables[i].getAttribute('data-nav-group') === groupName) {
+        indices.push(i);
+      }
     }
-    applyFilters();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return indices;
   }
 
-  /* ---------- EVENT DELEGATION ---------- */
-  $tabsBar.addEventListener('click', function (e) {
-    var btn = e.target.closest('.tab-btn');
-    if (btn) selectTab(btn.dataset.category);
-  });
+  function handleKeyDown(e) {
+    var key = e.key;
 
-  var searchDebounce = null;
-  $searchInput.addEventListener('input', function () {
-    clearTimeout(searchDebounce);
-    searchDebounce = setTimeout(function () {
-      searchQuery = $searchInput.value.trim();
-      applyFilters();
-    }, 180);
-  });
+    if (isLanModalOpen) {
+      if (key === 'Escape' || key === 'Backspace') {
+        e.preventDefault();
+        closeLanModal();
+        return;
+      }
+      if (focusables.length > 0) {
+        if (key === 'ArrowUp' || key === 'ArrowLeft') {
+          e.preventDefault();
+          setFocus(Math.max(0, (currentFocusIndex < 0 ? 0 : currentFocusIndex) - 1));
+          return;
+        }
+        if (key === 'ArrowDown' || key === 'ArrowRight') {
+          e.preventDefault();
+          setFocus(Math.min(focusables.length - 1, (currentFocusIndex < 0 ? 0 : currentFocusIndex) + 1));
+          return;
+        }
+        if (key === 'Enter') {
+          e.preventDefault();
+          var modalEl = focusables[currentFocusIndex >= 0 ? currentFocusIndex : 0];
+          if (modalEl) modalEl.click();
+          else closeLanModal();
+          return;
+        }
+      } else if (key === 'Enter') {
+        e.preventDefault();
+        closeLanModal();
+      }
+      return;
+    }
 
-  $btnRefresh.addEventListener('click', function () {
-    showToast('🔄 Đang làm mới...');
-    fetchData(false);
-  });
-  $btnTheme.addEventListener('click', toggleTheme);
-  $btnRetry.addEventListener('click', function () { fetchData(false); });
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'].indexOf(key) === -1) {
+      return;
+    }
 
-  /* ---------- LOCK "CẬP NHẬT MỚI" BUTTON WITH PASSWORD ---------- */
-  var $btnUpdates = document.getElementById('btn-updates');
-  if ($btnUpdates) {
-    var updatesUrl = $btnUpdates.href;
-    $btnUpdates.addEventListener('click', function (e) {
+    if (focusables.length === 0) return;
+
+    if (currentFocusIndex < 0) {
       e.preventDefault();
-      showPasswordModal(updatesUrl, 'Cập nhật mới');
-    });
+      setFocus(0);
+      return;
+    }
+
+    var cur = currentFocusIndex;
+
+    var currentEl = focusables[cur];
+    var currentGroup = currentEl ? currentEl.getAttribute('data-nav-group') : 'cards';
+
+    if (key === 'Enter') {
+      e.preventDefault();
+      if (currentEl) currentEl.click();
+      return;
+    }
+
+    var cols = getGridColumns();
+    var topbarIndices = findGroupIndices('topbar');
+    var cardIndices = findGroupIndices('cards');
+
+    if (currentGroup === 'topbar') {
+      var topPos = topbarIndices.indexOf(cur);
+      if (key === 'ArrowRight') {
+        e.preventDefault();
+        if (topPos < topbarIndices.length - 1) {
+          setFocus(topbarIndices[topPos + 1]);
+        }
+      } else if (key === 'ArrowLeft') {
+        e.preventDefault();
+        if (topPos > 0) {
+          setFocus(topbarIndices[topPos - 1]);
+        }
+      } else if (key === 'ArrowDown') {
+        e.preventDefault();
+        if (cardIndices.length > 0) {
+          setFocus(cardIndices[0]);
+        }
+      }
+    } else if (currentGroup === 'cards') {
+      var cardPos = cardIndices.indexOf(cur);
+      if (key === 'ArrowRight') {
+        e.preventDefault();
+        if (cardPos < cardIndices.length - 1) {
+          setFocus(cardIndices[cardPos + 1]);
+        }
+      } else if (key === 'ArrowLeft') {
+        e.preventDefault();
+        if (cardPos > 0) {
+          setFocus(cardIndices[cardPos - 1]);
+        }
+      } else if (key === 'ArrowDown') {
+        e.preventDefault();
+        var nextDown = cardPos + cols;
+        if (nextDown < cardIndices.length) {
+          setFocus(cardIndices[nextDown]);
+        } else if (cardPos < cardIndices.length - 1) {
+          setFocus(cardIndices[cardIndices.length - 1]);
+        }
+      } else if (key === 'ArrowUp') {
+        e.preventDefault();
+        var nextUp = cardPos - cols;
+        if (nextUp >= 0) {
+          setFocus(cardIndices[nextUp]);
+        } else if (topbarIndices.length > 0) {
+          setFocus(topbarIndices[0]);
+        }
+      }
+    }
   }
 
-  /* ============================================================
-     D-PAD / REMOTE NAVIGATION (Android TV)
-     ============================================================ */
-  if (LAYOUT === 'tv') {
-    (function () {
-      var KEY = { LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, ENTER: 13, BACK: 27 };
+  /* ===== THEME TOGGLE ===== */
+  function initTheme() {
+    var saved = localStorage.getItem('chum_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', saved);
+  }
 
-      function getAllFocusable() {
-        return Array.prototype.slice.call(document.querySelectorAll('.focusable:not([style*="display: none"]):not([style*="display:none"])'));
-      }
+  function toggleTheme() {
+    var current = document.documentElement.getAttribute('data-theme') || 'dark';
+    var next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('chum_theme', next);
+    showToast(next === 'dark' ? '🌙 Chế độ tối' : '☀️ Chế độ sáng');
+  }
 
-      function getTabButtons() {
-        return Array.prototype.slice.call($tabsBar.querySelectorAll('.tab-btn'));
-      }
+  /* ===== INITIALIZATION ===== */
+  function init() {
+    initTheme();
 
-      function getCardElements() {
-        return Array.prototype.slice.call($cardsGrid.querySelectorAll('.app-card'));
-      }
-
-      // Get the currently focused element
-      function getFocused() {
-        return document.activeElement;
-      }
-
-      // Focus an element with scroll into view
-      function focusElement(el) {
-        if (!el) return;
-        el.focus({ preventScroll: false });
-        el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
-      }
-
-      // Find nearest element in a direction
-      function findNearest(current, candidates, direction) {
-        if (!current || candidates.length === 0) return null;
-
-        var rect = current.getBoundingClientRect();
-        var cx = rect.left + rect.width / 2;
-        var cy = rect.top + rect.height / 2;
-
-        var best = null;
-        var bestDist = Infinity;
-
-        for (var i = 0; i < candidates.length; i++) {
-          var el = candidates[i];
-          if (el === current) continue;
-
-          var r = el.getBoundingClientRect();
-          var ex = r.left + r.width / 2;
-          var ey = r.top + r.height / 2;
-          var dx = ex - cx;
-          var dy = ey - cy;
-
-          var valid = false;
-          switch (direction) {
-            case 'left': valid = dx < -10; break;
-            case 'right': valid = dx > 10; break;
-            case 'up': valid = dy < -10; break;
-            case 'down': valid = dy > 10; break;
-          }
-
-          if (!valid) continue;
-
-          // Distance weighted by direction
-          var dist;
-          if (direction === 'left' || direction === 'right') {
-            dist = Math.abs(dx) + Math.abs(dy) * 3;
-          } else {
-            dist = Math.abs(dy) + Math.abs(dx) * 3;
-          }
-
-          if (dist < bestDist) {
-            bestDist = dist;
-            best = el;
-          }
-        }
-        return best;
-      }
-
-      document.addEventListener('keydown', function (e) {
-        var code = e.keyCode || e.which;
-        var focused = getFocused();
-        var isTab = focused && focused.classList.contains('tab-btn');
-        var isCard = focused && focused.classList.contains('app-card');
-        var isSearch = focused === $searchInput;
-
-        // If typing in search, let it be (except arrows)
-        if (isSearch && code !== KEY.DOWN && code !== KEY.UP && code !== KEY.BACK) return;
-
-        switch (code) {
-          case KEY.LEFT:
-            e.preventDefault();
-            if (isTab) {
-              var tabs = getTabButtons();
-              var idx = tabs.indexOf(focused);
-              if (idx > 0) focusElement(tabs[idx - 1]);
-            } else if (isCard) {
-              var target = findNearest(focused, getCardElements(), 'left');
-              if (target) focusElement(target);
-              else {
-                // Try tabs
-                var tabs2 = getTabButtons();
-                if (tabs2.length > 0) focusElement(tabs2[tabs2.length - 1]);
-              }
-            } else {
-              var all = getAllFocusable();
-              var i = all.indexOf(focused);
-              if (i > 0) focusElement(all[i - 1]);
-            }
-            break;
-
-          case KEY.RIGHT:
-            e.preventDefault();
-            if (isTab) {
-              var tabs = getTabButtons();
-              var idx = tabs.indexOf(focused);
-              if (idx < tabs.length - 1) focusElement(tabs[idx + 1]);
-            } else if (isCard) {
-              var target = findNearest(focused, getCardElements(), 'right');
-              if (target) focusElement(target);
-            } else {
-              var all = getAllFocusable();
-              var i = all.indexOf(focused);
-              if (i < all.length - 1) focusElement(all[i + 1]);
-            }
-            break;
-
-          case KEY.UP:
-            e.preventDefault();
-            if (isCard) {
-              var target = findNearest(focused, getCardElements(), 'up');
-              if (target) {
-                focusElement(target);
-              } else {
-                // Go to tabs
-                var tabs = getTabButtons();
-                var selTab = $tabsBar.querySelector('[aria-selected="true"]');
-                focusElement(selTab || tabs[0]);
-              }
-            } else if (isTab) {
-              // Go to topbar
-              focusElement($btnRefresh);
-            } else {
-              var all = getAllFocusable();
-              var i = all.indexOf(focused);
-              if (i > 0) focusElement(all[i - 1]);
-            }
-            break;
-
-          case KEY.DOWN:
-            e.preventDefault();
-            if (isTab || isSearch) {
-              // Jump to first card
-              var cards = getCardElements();
-              if (cards.length > 0) focusElement(cards[0]);
-            } else if (isCard) {
-              var target = findNearest(focused, getCardElements(), 'down');
-              if (target) focusElement(target);
-            } else {
-              // From topbar → tabs
-              var selTab = $tabsBar.querySelector('[aria-selected="true"]');
-              var tabs = getTabButtons();
-              focusElement(selTab || tabs[0]);
-            }
-            break;
-
-          case KEY.ENTER:
-            if (isTab) {
-              e.preventDefault();
-              selectTab(focused.dataset.category);
-              // After tab switch, focus first card
-              setTimeout(function () {
-                var cards = getCardElements();
-                if (cards.length > 0) focusElement(cards[0]);
-              }, 100);
-            }
-            // For cards: default <a> behavior handles it
-            break;
-
-          case KEY.BACK:
-            // Could be used to go back to tabs from cards
-            if (isCard) {
-              e.preventDefault();
-              var selTab = $tabsBar.querySelector('[aria-selected="true"]');
-              if (selTab) focusElement(selTab);
-            }
-            break;
-        }
+    if (dom.btnRefresh) {
+      dom.btnRefresh.addEventListener('click', function () {
+        fetchApps(true);
       });
+    }
 
-      // Auto-focus first tab on load
-      setTimeout(function () {
-        var selTab = $tabsBar.querySelector('[aria-selected="true"]');
-        if (selTab) selTab.focus();
-      }, 1500);
-    })();
+    if (dom.btnTheme) {
+      dom.btnTheme.addEventListener('click', toggleTheme);
+    }
+
+    if (dom.btnRetry) {
+      dom.btnRetry.addEventListener('click', function () {
+        fetchApps(true);
+      });
+    }
+
+    if (dom.btnLanSend) {
+      if (!window.ChumNative) {
+        var iconSpan = dom.btnLanSend.querySelector('.topbar-btn__icon');
+        var labelSpan = dom.btnLanSend.querySelector('.topbar-btn__label');
+        if (iconSpan) iconSpan.textContent = '📲';
+        if (labelSpan) labelSpan.textContent = 'Tải App APK';
+        dom.btnLanSend.setAttribute('aria-label', 'Tải ứng dụng CHUM STORE APK');
+        dom.btnLanSend.setAttribute('title', 'Tải CHUM-STORE.apk hoặc quét QR cài đặt');
+      }
+      dom.btnLanSend.addEventListener('click', openLanModal);
+    }
+
+    if (dom.btnLanClose) {
+      dom.btnLanClose.addEventListener('click', closeLanModal);
+    }
+
+    if (dom.lanOverlay) {
+      dom.lanOverlay.addEventListener('click', function (e) {
+        if (e.target === dom.lanOverlay) closeLanModal();
+      });
+    }
+
+    if (dom.btnDlCancel) {
+      dom.btnDlCancel.addEventListener('click', function () {
+        if (window.ChumNative && typeof window.ChumNative.cancelDownload === 'function') {
+          window.ChumNative.cancelDownload(activeDownloadFileName);
+        }
+        if (dom.dlBanner) dom.dlBanner.style.display = 'none';
+        showToast('⏹️ Đã hủy tải ứng dụng.');
+      });
+    }
+
+    if (dom.btnSelfUpdate) {
+      dom.btnSelfUpdate.addEventListener('click', function () {
+        if (selfUpdateApp) triggerDownload(selfUpdateApp);
+      });
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    fetchApps(false);
   }
 
-  /* ---------- AUTO REFRESH ---------- */
-  function startAutoRefresh() {
-    clearInterval(refreshTimer);
-    refreshTimer = setInterval(function () { fetchData(true); }, REFRESH_INTERVAL);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
   }
-
-  /* ---------- DEVICE MODE INDICATOR ---------- */
-  var DEVICE_INFO = {
-    'android-tv': { icon: '📺', label: 'Android TV', color: '#c6f135' },
-    'android':    { icon: '🤖', label: 'Android',    color: '#2dd4bf' },
-    'ios':        { icon: '🍎', label: 'iOS',        color: '#00d4ff' },
-    'pc':         { icon: '🖥️', label: 'PC',         color: '#a78bfa' }
-  };
-
-  function showDeviceIndicator() {
-    var info = DEVICE_INFO[DEVICE_MODE] || DEVICE_INFO['pc'];
-    var indicator = document.createElement('span');
-    indicator.className = 'device-indicator';
-    indicator.innerHTML = ' • <span class="device-badge" style="background:' + info.color + '">' + info.icon + ' ' + info.label + '</span>';
-    $statusLine.appendChild(indicator);
-  }
-
-  /* ---------- INIT ---------- */
-  fetchData(false);
-  startAutoRefresh();
-  setTimeout(showDeviceIndicator, 2000);
-
-  /* ---------- SERVICE WORKER — DISABLED to prevent caching issues ---------- */
-  // if ('serviceWorker' in navigator) {
-  //   window.addEventListener('load', function () {
-  //     navigator.serviceWorker.register('./sw.js').catch(function () { /* ignore */ });
-  //   });
-  // }
-
 })();

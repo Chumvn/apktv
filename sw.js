@@ -1,10 +1,15 @@
-/* Service Worker — KHO APP CHUM — Neo-Brutalist Edition */
-const CACHE_NAME = 'chumapp-nb-v2.1';
+/* Service Worker — CHUM STORE */
+const CACHE_NAME = 'chum-store-v8.3';
 const ASSETS = [
   './',
   './index.html',
   './style.css',
   './app.js',
+  './qrcode.min.js',
+  './icon-192.png',
+  './icon-512.png',
+  './logo.png',
+  './logo.svg',
   './manifest.webmanifest'
 ];
 
@@ -26,10 +31,12 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
+  const url = new URL(e.request.url);
+  if (url.origin !== location.origin) return;
   e.respondWith(
     fetch(e.request)
       .then(res => {
-        if (res.ok) {
+        if (res && res.ok && !url.pathname.endsWith('.apk')) {
           const clone = res.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
         }
