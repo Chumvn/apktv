@@ -14,6 +14,3 @@ Kho ứng dụng Android TV & Điện thoại đồng bộ tự động từ Git
 
 ## Triển khai Web (GitHub Pages)
 
-1. Push toàn bộ thư mục này lên nhánh `main` của repo GitHub (`Chumvn/apktv`).
-2. Vào **Settings → Pages** → chọn branch `main` → Save.
-3. Truy cập `https://chumvn.github.io/apktv/`.
