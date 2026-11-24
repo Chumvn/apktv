@@ -1,5 +1,5 @@
-/* Service Worker — CHUM STORE */
-const CACHE_NAME = 'chum-store-v8.3';
+/* Service Worker — CHUM STORE Soft UI */
+const CACHE_NAME = 'chum-store-v9.0';
 const ASSETS = [
   './',
   './index.html',

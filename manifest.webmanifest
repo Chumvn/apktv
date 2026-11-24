@@ -1,28 +1,28 @@
 {
   "name": "CHUM STORE",
   "short_name": "CHUM STORE",
-  "description": "CHUM STORE — Kho ứng dụng Android TV & Điện thoại",
+  "description": "CHUM STORE — Kho ứng dụng Android TV & Điện thoại Soft UI",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0a0b10",
-  "theme_color": "#1e88e5",
+  "background_color": "#e6ecf5",
+  "theme_color": "#3b6bf6",
   "orientation": "any",
   "categories": ["utilities"],
   "icons": [
     {
-      "src": "./icon-512.png?v=15",
+      "src": "./icon-512.png?v=16",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icon-192.png?v=15",
+      "src": "./icon-192.png?v=16",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./logo.svg?v=15",
+      "src": "./logo.svg?v=16",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"

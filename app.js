@@ -1,10 +1,11 @@
 /* ===================================================================
- *  CHUM STORE – Web, Android Mobile & Android TV Store
- *  - Tự động nhận diện thiết bị chuẩn xác (Android Mobile, Android TV & Web)
- *  - Danh sách sắp xếp tự động: File nào tải lên sau cùng hiện ở trên cùng
- *  - Thẻ ứng dụng hiển thị: Tên app, Package Name, Dung lượng (dl), Ngày cập nhật
- *  - Nhấn vào thẻ là tải & cài đặt luôn (không nút rườm rà)
- *  - Hỗ trợ D-Pad remote TV mượt mà, nhận APK Wi-Fi (App) / Tải App QR (Web)
+ *  CHUM STORE — SOFT UI EDITION
+ *  - Giao diện Soft UI (Neumorphism) đồng bộ cả App Android/TV & Web
+ *  - Tự động nhận diện thiết bị chuẩn xác (Android Mobile, Android TV, Desktop Web)
+ *  - Danh sách sắp xếp tự động: File tải lên sau cùng hiện ở trên cùng
+ *  - Đọc chính xác package name thực từ AndroidManifest.xml (HTTP Range + Map chuẩn)
+ *  - Thẻ ứng dụng hiển thị: Tên app, Package chuẩn, Dung lượng, Giờ & Ngày cập nhật
+ *  - Nhấn vào thẻ là tải & cài đặt luôn
  * =================================================================== */
 (function () {
   'use strict';
@@ -18,128 +19,202 @@
     FETCH_TIMEOUT_MS: 12000
   };
 
-  /* ===== KNOWN PACKAGE NAME MAPPING & INFERENCE ===== */
-  var KNOWN_PACKAGES = {
-    'youtube': 'com.google.android.youtube.tv',
-    'smarttube': 'com.liskovsoft.smarttubetv.beta',
-    'smarttubenext': 'com.liskovsoft.smarttubetv.beta',
-    'stube': 'com.liskovsoft.smarttubetv',
-    'tivimate': 'ar.tvplayer.tv',
-    'ottnavigator': 'studio.scillarium.ottnavigator',
-    'ott': 'studio.scillarium.ottnavigator',
-    'kodi': 'org.xbmc.kodi',
-    'vlc': 'org.videolan.vlc',
-    'mxplayer': 'com.mxtech.videoplayer.ad',
-    'mxpro': 'com.mxtech.videoplayer.pro',
-    'netflix': 'com.netflix.ninja',
-    'spotify': 'com.spotify.tv.android',
-    'vtvgo': 'vn.vtv.vtvgo',
-    'fptplay': 'com.fptplay.activity',
-    'fpt': 'com.fptplay.activity',
-    'vieon': 'vn.vieon.ewales',
-    'tv360': 'com.viettel.tv360',
-    'mytv': 'com.vnpt.mytv.tv',
-    'onplus': 'com.vtvcab.onplus',
-    'galaxyplay': 'com.fimplus.activity',
-    'clip': 'vn.cliptv.tv',
-    'cliptv': 'vn.cliptv.tv',
-    'vtv': 'vn.vtv.vtvgo',
-    'monstertv': 'com.monstertv.player',
-    'xemtv': 'vn.xemtv.live',
-    'bongda': 'vn.bongdatv.live',
-    'sendfiles': 'com.yablio.sendfilestotv',
-    'sfttv': 'com.yablio.sendfilestotv',
-    'cxfile': 'com.cxinventor.file.explorer',
-    'cxexplorer': 'com.cxinventor.file.explorer',
-    'esfile': 'com.estrongs.android.pop',
-    'xplore': 'com.lonelycatgames.Xplore',
-    'solidexplorer': 'pl.solidexplorer2',
-    'mixplorer': 'com.mixplorer',
-    'zarchiver': 'ru.zdevs.zarchiver',
-    'adguard': 'com.adguard.android',
-    'blokada': 'org.blokada.alarm.dnschanger',
-    'warp': 'com.cloudflare.onedotonedotonedotone',
-    '1111': 'com.cloudflare.onedotonedotonedotone',
-    'nordvpn': 'com.nordvpn.android',
-    'expressvpn': 'com.expressvpn.vpn',
-    'protonvpn': 'ch.protonvpn.android',
-    'surfshark': 'com.surfshark.vpnclient.android',
-    'projectivy': 'com.spocky.projengmenu',
-    'flauncher': 'me.efesser.flauncher',
-    'atvlauncher': 'ca.dstudio.atvlauncher.pro',
-    'wolf': 'com.wolf.firelauncher',
-    'halalauncher': 'com.halalauncher.tv',
-    'buttonmapper': 'flar2.homebutton',
-    'tvquickactions': 'dev.vodik7.tvquickactions',
-    'mouse': 'com.fluxii.android.mousetoggle',
-    'CetusPlay': 'com.cetusplay.remoteservice',
-    'zankremote': 'zank.remote',
-    'teamviewer': 'com.teamviewer.quicksupport.market',
-    'anydesk': 'com.anydesk.anydeskandroid',
-    'airdroid': 'com.sand.airdroid',
-    'adb': ' com.cgutman.androidremotedebugger',
-    'shizuku': 'moe.shizuku.privileged.api',
-    'sai': 'com.aefyr.sai',
-    'apkmirror': 'com.apkmirror.helper.prod',
-    'aptoide': 'cm.aptoidetv.pt',
-    'aurora': 'com.aurora.store',
-    'browser': 'com.tvwebbrowser.v22',
-    'tvbro': 'com.phlox.tvwebbrowser',
-    'puffin': 'com.cloudmosa.puffinTV',
-    'jio': 'com.jio.web.androidtv',
-    'chrome': 'com.android.chrome',
-    'firefox': 'org.mozilla.tv.firefox',
-    'brave': 'com.brave.browser',
-    'kiwi': 'com.kiwibrowser.browser',
-    'tiktok': 'com.zhiliaoapp.musically',
-    'facebook': 'com.facebook.katana',
-    'zalo': 'com.zing.zalo',
-    'telegram': 'org.telegram.messenger',
-    'stremio': 'com.stremio.one',
-    'cloudstream': 'com.lagradost.cloudstream3',
-    'hdo': 'com.hdobox.tv',
-    'onstream': 'com.onstream.tv',
-    'filmplus': 'com.filmplus.app',
-    'beetv': 'com.beetv.app',
-    'cinemahd': 'com.cinemahd.v2',
-    'plex': 'com.plexapp.android',
-    'jellyfin': 'org.jellyfin.androidtv',
-    'emby': 'tv.emby.embyatv',
-    'nova': 'org.courville.nova',
-    'justplayer': 'com.brouken.player',
-    'vimu': 'net.gtvbox.videoplayer',
-    'perfectplayer': 'com.niklabs.pp',
-    'iptv': 'ru.iptvremote.android.iptv',
-    'iptvpro': 'ru.iptvremote.android.iptv.pro',
-    'televizo': 'com.ottplay.ottplay',
-    'sparkle': 'se.hedekonsult.sparkle',
-    'implayer': 'com.myiptvonline.implayer',
-    'smarters': 'com.nst.iptvsmarterstvbox',
-    'xciptv': 'com.nathnetwork.xciptv',
-    'lazada': 'com.lazada.android',
-    'shopee': 'com.shopee.vn',
-    'chumstore': 'com.chum.store'
+  /* ===== VERIFIED EXACT PACKAGE MAP (FROM REAL AndroidManifest.xml) ===== */
+  var EXACT_FILE_PACKAGES = {
+    'gvoice-soft-ui.apk': 'com.gvoice.chum',
+    'gvoice-chum.apk': 'com.gvoice.chum',
+    'gvoice-ver-old.apk': 'com.gvoice.googletv',
+    'gvoice-googletv.apk': 'com.gvoice.googletv',
+    'g_mark.apk': 'com.chum.gmark',
+    'gmark.apk': 'com.chum.gmark',
+    'tizentubecobalt-arm-mod-packpage-youtube-tv.apk': 'com.google.android.youtube.tv',
+    'tizencobalt-1.0.0-arm.apk': 'io.gh.reisxd.tizentube.cobalt',
+    'gdel.apk': 'com.gdebloat',
+    'gpowersoft.apk': 'com.gpowersoft',
+    'g-power.apk': 'com.gpower',
+    'gpower.apk': 'com.gpower',
+    'youtube_xanh.apk': 'com.chum.youtube',
+    'glaucher-v2.0.0.apk': 'com.chum.glaucher',
+    'tiktok_tv-v12.3.4.1-tiktok_tv_patches-v1.0.0.apk': 'com.tiktok.tv',
+    'chum_dl.apk': 'com.chum.dl',
+    'chumdl.apk': 'com.chum.dl',
+    'picsart_v31.2.6_clean.apk': 'com.picsart.studio',
+    'wifimod_cleanmod.apk': 'com.halo.wifikey.wifilocating',
+    'gpro-fb-lite-dualabi-v536.apk': 'com.gpro.facebook',
+    'tv24h-v1.0.0.apk': 'com.tv24h.player',
+    'xem-tv.apk': 'com.chum.xemtv',
+    'chum-store.apk': 'com.chum.store',
+    'x-plore.file.manager.v4.53.01.b45301.apk': 'com.lonelycatgames.Xplore',
+    'tiktok-lite-android.apk': 'com.tiktok.lite.go',
+    'tiktok-lite-androidtv.apk': 'com.zhiliaoapp.musically.go',
+    'airreceiverlitev5.1.3-v8.apk': 'com.softmedia.receiver.lite',
+    'airreceiverlite_v5.1.7-v7.apk': 'com.softmedia.receiver.lite',
+    'brave-armv8-v2.8.0.apk': 'com.brave.browser',
+    'brave-armv7-v2.8.0.apk': 'com.brave.browser',
+    'televizo_1.9.9.43.apk': 'com.ottplay.ottplay',
+    'custom.youtube.32.56_v7.apk': 'org.smarttuby.stable',
+    'key_mapper_4.5.0_xs.apk': 'io.github.sds100.keymapper',
+    'karaoke.3.57.apk': 'com.smartkaraoke.playerpro',
+    'c.c.c.c.tv.browser.lite.1.6.apk': 'com.coccoc.trinhduyet_tvlite',
+    'cobalt-smarttube-beta-android56.apk': 'org.smarttube.beta',
+    'cobalt.smarttube.beta100_tizenmod.apk': 'com.liskovsoft.smarttubetv.beta',
+    'com.vproject.vapptv_1.0.2_3.apk': 'com.vproject.vapptv',
+    'imou.apk': 'com.imoulife.phap',
+    'tatcaapp.apk': 'net.easyjoin.applauncher',
+    'vaxapp.apk': 'com.vaapp.app',
+    'localsend-1.17.0-android-arm64v8.1.apk': 'org.localsend.localsend_app',
+    'localsend-1.17.0-android-arm32v7.apk': 'org.localsend.localsend_app',
+    'vietplaytv.apk': 'com.nghenhin24h.vietplaytv',
+    'buttons_remapper_v1.24.1__premium_.apk': 'com.irishin.buttonsremapper',
+    'aptoidetv.apk': 'cm.aptoidetv.pt',
+    'cobalt.youtube.tv100.apk': 'com.google.android.youtube.tv',
+    'cobalt.smarttube.beta100.apk': 'com.liskovsoft.videomanager.beta',
+    'chumtv.apk': 'vn.chumtv.launcher',
+    'xem.tv365-v3.apk': 'com.tvonline.hdtv',
+    'chumvoice.apk': 'vn.chum.voice',
+    'chum_home.apk': 'com.chum.home',
+    'chumqr.apk': 'com.chumqr.app',
+    'chumtick.apk': 'com.chumtick.camera'
   };
 
-  /* ===== APP ICON MAPPING ===== */
+  /* Ordered longest / most-specific patterns (avoids substring collisions) */
+  var ORDERED_PACKAGE_PATTERNS = [
+    ['tizentubecobalt', 'com.google.android.youtube.tv'],
+    ['modpackpageyoutubetv', 'com.google.android.youtube.tv'],
+    ['tizencobalt', 'io.gh.reisxd.tizentube.cobalt'],
+    ['youtube_xanh', 'com.chum.youtube'],
+    ['youtubexanh', 'com.chum.youtube'],
+    ['youtube_chum', 'com.chum.youtube'],
+    ['youtubechum', 'com.chum.youtube'],
+    ['customyoutube', 'org.smarttuby.stable'],
+    ['smarttubebetaandroid56', 'org.smarttube.beta'],
+    ['beta100tizenmod', 'com.liskovsoft.smarttubetv.beta'],
+    ['smarttubebeta100', 'com.liskovsoft.videomanager.beta'],
+    ['cobaltyoutubetv', 'com.google.android.youtube.tv'],
+    ['gvoicesoftui', 'com.gvoice.chum'],
+    ['gvoicechum', 'com.gvoice.chum'],
+    ['gvoiceverold', 'com.gvoice.googletv'],
+    ['gvoicegoogletv', 'com.gvoice.googletv'],
+    ['gpowersoft', 'com.gpowersoft'],
+    ['g-power', 'com.gpower'],
+    ['gpower', 'com.gpower'],
+    ['gmark', 'com.chum.gmark'],
+    ['g_mark', 'com.chum.gmark'],
+    ['gdel', 'com.gdebloat'],
+    ['glaucher', 'com.chum.glaucher'],
+    ['gpro-fb', 'com.gpro.facebook'],
+    ['gprofblite', 'com.gpro.facebook'],
+    ['chum-store', 'com.chum.store'],
+    ['chumstore', 'com.chum.store'],
+    ['chum_dl', 'com.chum.dl'],
+    ['chumdl', 'com.chum.dl'],
+    ['chumtv', 'vn.chumtv.launcher'],
+    ['chumvoice', 'vn.chum.voice'],
+    ['chumtick', 'com.chumtick.camera'],
+    ['chumqr', 'com.chumqr.app'],
+    ['chum_home', 'com.chum.home'],
+    ['luuweb', 'com.chum.luuweb'],
+    ['xem-tv', 'com.chum.xemtv'],
+    ['xemtv365', 'com.tvonline.hdtv'],
+    ['tv365', 'com.tvonline.hdtv'],
+    ['tv24h', 'com.tv24h.player'],
+    ['vietplaytv', 'com.nghenhin24h.vietplaytv'],
+    ['tiktok_tv', 'com.tiktok.tv'],
+    ['tiktoktv', 'com.tiktok.tv'],
+    ['tiktok-lite-androidtv', 'com.zhiliaoapp.musically.go'],
+    ['tiktokliteandroidtv', 'com.zhiliaoapp.musically.go'],
+    ['tiktok-lite-android', 'com.tiktok.lite.go'],
+    ['tiktokliteandroid', 'com.tiktok.lite.go'],
+    ['airreceiver', 'com.softmedia.receiver.lite'],
+    ['localsend', 'org.localsend.localsend_app'],
+    ['x-plore', 'com.lonelycatgames.Xplore'],
+    ['xplore', 'com.lonelycatgames.Xplore'],
+    ['televizo', 'com.ottplay.ottplay'],
+    ['key_mapper', 'io.github.sds100.keymapper'],
+    ['keymapper', 'io.github.sds100.keymapper'],
+    ['buttons_remapper', 'com.irishin.buttonsremapper'],
+    ['buttonsremapper', 'com.irishin.buttonsremapper'],
+    ['tvquickactions', 'dev.vodik7.tvquickactions'],
+    ['c.c.c.c', 'com.coccoc.trinhduyet_tvlite'],
+    ['cccctv', 'com.coccoc.trinhduyet_tvlite'],
+    ['coccoc', 'com.coccoc.trinhduyet_tvlite'],
+    ['wifimod', 'com.halo.wifikey.wifilocating'],
+    ['picsart', 'com.picsart.studio'],
+    ['karaoke', 'com.smartkaraoke.playerpro'],
+    ['brave', 'com.brave.browser'],
+    ['imou', 'com.imoulife.phap'],
+    ['tatcaapp', 'net.easyjoin.applauncher'],
+    ['vaxapp', 'com.vaapp.app'],
+    ['aptoide', 'cm.aptoidetv.pt'],
+    ['smarttubenext', 'com.liskovsoft.smarttubetv.beta'],
+    ['smarttube', 'org.smarttube.beta'],
+    ['tivimate', 'ar.tvplayer.tv'],
+    ['ottnavigator', 'studio.scillarium.ottnavigator'],
+    ['kodi', 'org.xbmc.kodi'],
+    ['vlc', 'org.videolan.vlc'],
+    ['vtvgo', 'vn.vtv.vtvgo'],
+    ['fptplay', 'com.fptplay.activity'],
+    ['vieon', 'vn.vieon.ewales'],
+    ['zalo', 'com.zing.zalo'],
+    ['telegram', 'org.telegram.messenger'],
+    ['projectivy', 'com.spocky.projengmenu'],
+    ['adguard', 'com.adguard.android'],
+    ['shizuku', 'moe.shizuku.privileged.api']
+  ];
+
+  /* ===== FRIENDLY TITLE OVERRIDES & ICON MAPPING ===== */
+  var EXACT_FRIENDLY_NAMES = {
+    'tizentubecobalt-arm-mod-packpage-youtube-tv.apk': 'TizenTube Cobalt (YouTube TV)',
+    'c.c.c.c.tv.browser.lite.1.6.apk': 'Cốc Cốc TV Browser Lite',
+    'x-plore.file.manager.v4.53.01.b45301.apk': 'X-plore File Manager',
+    'tiktok_tv-v12.3.4.1-tiktok_tv_patches-v1.0.0.apk': 'TikTok TV',
+    'tiktok-lite-android.apk': 'TikTok Lite (Điện thoại)',
+    'tiktok-lite-androidtv.apk': 'TikTok Lite (Android TV)',
+    'xem-tv.apk': 'XEM TV',
+    'chum_dl.apk': 'CHUM DL',
+    'chum-store.apk': 'CHUM STORE',
+    'g_mark.apk': 'G MARK',
+    'gvoice-soft-ui.apk': 'GVoice Soft UI',
+    'gvoice-ver-old.apk': 'GVoice Old',
+    'gpro-fb-lite-dualabi-v536.apk': 'GPro Facebook Lite',
+    'wifimod_cleanmod.apk': 'WiFi Master CleanMod',
+    'picsart_v31.2.6_clean.apk': 'Picsart Clean',
+    'tizencobalt-1.0.0-arm.apk': 'TizenTube Cobalt',
+    'custom.youtube.32.56_v7.apk': 'Custom YouTube (SmartTube)',
+    'cobalt-smarttube-beta-android56.apk': 'SmartTube Beta (Android 5/6)',
+    'cobalt.smarttube.beta100_tizenmod.apk': 'SmartTube Beta (TizenMod)',
+    'cobalt.smarttube.beta100.apk': 'Cobalt SmartTube Beta 100',
+    'cobalt.youtube.tv100.apk': 'YouTube TV Cobalt 100',
+    'buttons_remapper_v1.24.1__premium_.apk': 'Buttons Remapper Premium',
+    'localsend-1.17.0-android-arm64v8.1.apk': 'LocalSend (ARM64-v8)',
+    'localsend-1.17.0-android-arm32v7.apk': 'LocalSend (ARM32-v7)',
+    'airreceiverlitev5.1.3-v8.apk': 'AirReceiver Lite (v8)',
+    'airreceiverlite_v5.1.7-v7.apk': 'AirReceiver Lite (v7)',
+    'brave-armv8-v2.8.0.apk': 'Brave Browser (ARMv8)',
+    'brave-armv7-v2.8.0.apk': 'Brave Browser (ARMv7)',
+    'com.vproject.vapptv_1.0.2_3.apk': 'VApp TV',
+    'tatcaapp.apk': 'Tất Cả App',
+    'aptoidetv.apk': 'Aptoide TV'
+  };
+
   var APP_ICONS = [
-    { keys: ['youtube', 'ytb', 'smarttube', 'stube', 'newpipe', 'revanced'], emoji: '▶️', bg: 'linear-gradient(135deg,#ef4444,#b91c1c)' },
-    { keys: ['tv', 'tivi', 'vtv', 'fpt', 'vieon', 'mytv', 'tv360', 'iptv', 'ott', 'tivimate', 'kodi', 'xemtv', 'monstertv', 'bongda', 'thethao', 'sport', 'live'], emoji: '📺', bg: 'linear-gradient(135deg,#8b5cf6,#6d28d9)' },
-    { keys: ['phim', 'movie', 'cinema', 'netflix', 'stremio', 'cloudstream', 'hdo', 'plex', 'jellyfin', 'film', 'anime', 'sub'], emoji: '🎬', bg: 'linear-gradient(135deg,#ec4899,#be185d)' },
-    { keys: ['music', 'nhac', 'zing', 'spotify', 'mp3', 'sound', 'karaoke', 'radio'], emoji: '🎵', bg: 'linear-gradient(135deg,#10b981,#047857)' },
-    { keys: ['vlc', 'mx', 'player', 'video', 'vimu', 'nova', 'justplayer'], emoji: '🎞️', bg: 'linear-gradient(135deg,#f97316,#c2410c)' },
-    { keys: ['file', 'explorer', 'xplore', 'cx', 'esfile', 'zarchiver', 'sendfiles', 'sfttv', 'ftp', 'usb', 'manager', 'solid', 'mix'], emoji: '📁', bg: 'linear-gradient(135deg,#eab308,#a16207)' },
-    { keys: ['vpn', '1111', 'warp', 'adguard', 'dns', 'proxy', 'block', 'security'], emoji: '🛡️', bg: 'linear-gradient(135deg,#06b6d4,#0e7490)' },
-    { keys: ['browser', 'chrome', 'firefox', 'tvbro', 'puffin', 'web', 'coccoc', 'brave'], emoji: '🌐', bg: 'linear-gradient(135deg,#3b82f6,#1d4ed8)' },
-    { keys: ['launcher', 'atv', 'projectivy', 'wolf', 'flauncher', 'home', 'leanback'], emoji: '🏠', bg: 'linear-gradient(135deg,#6366f1,#4338ca)' },
-    { keys: ['remote', 'mouse', 'chuot', 'key', 'button', 'mapper', 'control', 'adb', 'cast', 'airscreen', 'miracast'], emoji: '🎮', bg: 'linear-gradient(135deg,#14b8a6,#0f766e)' },
-    { keys: ['clean', 'boost', 'ram', 'speed', 'test', 'benchmark', 'cpu', 'aida', 'info', 'tool', 'setting'], emoji: '⚡', bg: 'linear-gradient(135deg,#f59e0b,#b45309)' },
-    { keys: ['store', 'chplay', 'aptoide', 'aurora', 'apk', 'chum'], emoji: '🛍️', bg: 'linear-gradient(135deg,#a855f7,#7e22ce)' },
-    { keys: ['tiktok', 'facebook', 'fb', 'zalo', 'telegram', 'messenger', 'chat', 'social'], emoji: '💬', bg: 'linear-gradient(135deg,#0ea5e9,#0369a1)' }
+    { keys: ['youtube', 'ytb', 'smarttube', 'stube', 'tizen', 'cobalt'], emoji: '▶️', bg: 'linear-gradient(135deg,#ef4444,#b91c1c)' },
+    { keys: ['voice', 'gvoice', 'mic'], emoji: '🎙️', bg: 'linear-gradient(135deg,#3b82f6,#1d4ed8)' },
+    { keys: ['xem', 'tv24h', 'vtv', 'fpt', 'vieon', 'mytv', 'iptv', 'ott', 'televizo', 'tivimate', 'kodi', 'vietplay', 'vax', 'vapptv'], emoji: '📺', bg: 'linear-gradient(135deg,#8b5cf6,#6d28d9)' },
+    { keys: ['phim', 'movie', 'cinema', 'netflix', 'stremio', 'film'], emoji: '🎬', bg: 'linear-gradient(135deg,#ec4899,#be185d)' },
+    { keys: ['karaoke', 'music', 'nhac', 'zing', 'spotify', 'mp3'], emoji: '🎵', bg: 'linear-gradient(135deg,#10b981,#047857)' },
+    { keys: ['x-plore', 'xplore', 'file', 'localsend', 'sendfiles', 'zarchiver'], emoji: '📁', bg: 'linear-gradient(135deg,#f59e0b,#b45309)' },
+    { keys: ['wifi', 'vpn', 'adguard', 'imou', 'gdel'], emoji: '🛡️', bg: 'linear-gradient(135deg,#06b6d4,#0e7490)' },
+    { keys: ['browser', 'chrome', 'firefox', 'brave', 'c.c.c.c', 'coccoc'], emoji: '🌐', bg: 'linear-gradient(135deg,#3b82f6,#1d4ed8)' },
+    { keys: ['launcher', 'glaucher', 'projectivy', 'tatcaapp', 'chumtv'], emoji: '🏠', bg: 'linear-gradient(135deg,#6366f1,#4338ca)' },
+    { keys: ['key_mapper', 'mapper', 'buttons', 'quickactions', 'airreceiver'], emoji: '🎮', bg: 'linear-gradient(135deg,#14b8a6,#0f766e)' },
+    { keys: ['power', 'gpowersoft', 'gmark', 'g_mark', 'chum_dl', 'chumdl'], emoji: '⚡', bg: 'linear-gradient(135deg,#f59e0b,#d97706)' },
+    { keys: ['store', 'aptoide', 'chum-store', 'chumstore'], emoji: '🛒', bg: 'linear-gradient(135deg,#3b6bf6,#2563eb)' },
+    { keys: ['tiktok', 'facebook', 'fb-lite', 'zalo', 'telegram', 'picsart'], emoji: '💬', bg: 'linear-gradient(135deg,#0ea5e9,#0369a1)' }
   ];
 
   var DEFAULT_GRADIENTS = [
-    'linear-gradient(135deg,#a3e635,#4d7c0f)',
+    'linear-gradient(135deg,#3b6bf6,#2563eb)',
     'linear-gradient(135deg,#f59e0b,#b45309)',
     'linear-gradient(135deg,#10b981,#047857)',
     'linear-gradient(135deg,#ef4444,#b91c1c)',
@@ -154,7 +229,8 @@
   var isLoading = false;
   var currentFocusIndex = -1;
   var focusables = [];
-  var savedFilePkgMap = {}; // fileName -> pkgName
+  var savedFilePkgMap = {}; // fileName -> real packageName
+  var cardPkgElements = {}; // fileName -> DOM element for live update
   var activeDownloadFileName = '';
   var isLanModalOpen = false;
   var selfUpdateApp = null;
@@ -172,7 +248,9 @@
     btnRetry: document.getElementById('btn-retry'),
     toast: document.getElementById('toast'),
     dlBanner: document.getElementById('dl-banner'),
+    dlBannerBadge: document.getElementById('dl-banner-badge'),
     dlBannerTitle: document.getElementById('dl-banner-title'),
+    dlBannerPct: document.getElementById('dl-banner-pct'),
     dlBannerStats: document.getElementById('dl-banner-stats'),
     dlBannerFill: document.getElementById('dl-banner-fill'),
     btnDlCancel: document.getElementById('btn-dl-cancel'),
@@ -193,42 +271,35 @@
     btnWebApkDl: document.getElementById('btn-web-apk-dl')
   };
 
-  /* ===== ACCURATE DEVICE DETECTION (ANDROID MOBILE vs ANDROID TV vs DESKTOP WEB) ===== */
+  /* ===== DEVICE DETECTION (ANDROID MOBILE vs ANDROID TV vs DESKTOP WEB) ===== */
   function detectLayout() {
-    // 1. Direct query string override
     var params = new URLSearchParams(window.location.search);
     var forced = params.get('layout') || params.get('mode');
     if (forced === 'tv' || forced === 'android-tv') return 'tv';
     if (forced === 'mobile' || forced === 'android') return 'mobile';
     if (forced === 'desktop' || forced === 'web' || forced === 'pc') return 'desktop';
 
-    // 2. Direct query to native Java bridge
     if (window.ChumNative && typeof window.ChumNative.isAndroidTV === 'function') {
       try {
         return window.ChumNative.isAndroidTV() ? 'tv' : 'mobile';
       } catch (e) { /* ignore */ }
     }
 
-    // 3. User-Agent TV signatures
     var ua = navigator.userAgent.toLowerCase();
     var isTV = /android tv|smarttv|googletv|crkey|aftb|aftt|aftm|afts|aftkmst|bravia|philipstv|tizen|web0s|webos|netcast|viera|hisense|vidaa|mibox|shield|leanback/i.test(ua);
     if (isTV) return 'tv';
 
-    // 4. Mobile & tablet browser detection
     var isMobileUA = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(ua);
     if (isMobileUA) return 'mobile';
 
-    // 5. Narrow mobile viewport fallback
     if (window.innerWidth > 0 && window.innerWidth <= 640) return 'mobile';
 
-    // 6. Standard desktop / laptop web browser
     return 'desktop';
   }
 
   var LAYOUT = detectLayout();
   document.documentElement.setAttribute('data-layout', LAYOUT);
 
-  // Authoritative callback callable from MainActivity.java
   window.setDeviceLayout = function (layout) {
     if (layout === 'tv' || layout === 'mobile' || layout === 'desktop') {
       LAYOUT = layout;
@@ -238,7 +309,7 @@
     }
   };
 
-  /* ===== NATIVE PACKAGE SYNC ===== */
+  /* ===== NATIVE PACKAGE SYNC & REMOTE ANDROIDMANIFEST INSPECTION ===== */
   function syncNativePackages() {
     if (!window.ChumNative) return;
     try {
@@ -249,8 +320,51 @@
     } catch (e) { /* ignore */ }
   }
 
+  function triggerNativeRemotePackageResolve(rawList) {
+    if (!window.ChumNative || typeof window.ChumNative.resolveRemotePackagesAsync !== 'function') return;
+    try {
+      var payload = rawList.map(function (a) {
+        return {
+          name: a.name,
+          url: a.browser_download_url,
+          size: a.size || 0,
+          updated_at: a.updated_at || a.created_at || ''
+        };
+      });
+      window.ChumNative.resolveRemotePackagesAsync(JSON.stringify(payload));
+    } catch (e) { /* ignore */ }
+  }
+
+  window.onNativeRemotePackagesResolved = function (resolvedMap) {
+    if (!resolvedMap || typeof resolvedMap !== 'object') return;
+    for (var fileName in resolvedMap) {
+      if (!resolvedMap.hasOwnProperty(fileName)) continue;
+      var realPkg = resolvedMap[fileName];
+      if (!realPkg || realPkg.indexOf('.') === -1) continue;
+      savedFilePkgMap[fileName] = realPkg;
+      for (var i = 0; i < allApps.length; i++) {
+        if (allApps[i].name === fileName) {
+          allApps[i].packageName = realPkg;
+          break;
+        }
+      }
+      var el = cardPkgElements[fileName];
+      if (el) {
+        el.textContent = '📦 ' + realPkg;
+        el.title = 'Package chuẩn: ' + realPkg;
+      }
+    }
+  };
+
+  window.onNativeApkParsed = function (fileName, pkgName) {
+    if (!fileName || !pkgName) return;
+    var obj = {};
+    obj[fileName] = pkgName;
+    window.onNativeRemotePackagesResolved(obj);
+  };
+
   /* ===== CACHE STORAGE ===== */
-  var CACHE_KEY = 'chum_store_apps_cache_v8';
+  var CACHE_KEY = 'chum_store_apps_cache_v9';
 
   function getCachedData(allowExpired) {
     try {
@@ -267,15 +381,12 @@
 
   function setCachedData(assets) {
     try {
-      var payload = {
-        ts: Date.now(),
-        assets: assets
-      };
+      var payload = { ts: Date.now(), assets: assets };
       localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
     } catch (e) { /* quota exceeded */ }
   }
 
-  /* ===== STRING HELPERS ===== */
+  /* ===== STRING & DATE/TIME HELPERS ===== */
   function normalizeStr(str) {
     if (!str) return '';
     return str
@@ -285,13 +396,22 @@
   }
 
   function cleanAppName(filename) {
+    var lowerFn = filename.toLowerCase();
+    if (EXACT_FRIENDLY_NAMES[lowerFn]) {
+      return EXACT_FRIENDLY_NAMES[lowerFn];
+    }
     var name = filename.replace(/\.(apk|xapk|apks|apkm)$/i, '');
-    name = name.replace(/[-_]+/g, ' ').trim();
-    name = name.replace(/\bv?\d+(\.\d+)+[a-z0-9._-]*\b/gi, '').trim();
-    name = name.replace(/\b(release|debug|signed|unsigned|mod|apk|tv|android|beta|premium|vip|pro)\b/gi, '').trim();
-    name = name.replace(/\s{2,}/g, ' ');
+    // Replace separators carefully while preserving hyphens in common product names like X-plore
+    name = name.replace(/[_]+/g, ' ').replace(/\.(?!\d)/g, ' ');
+    // Strip version chunks like v1.2.3, 32.56, v2.8.0, b45301, 1.0.0
+    name = name.replace(/\bv?\d+(\.\d+)+[a-z0-9._-]*\b/gi, ' ');
+    name = name.replace(/\bb\d{4,}\b/gi, ' ');
+    name = name.replace(/[-]+/g, ' ');
+    name = name.replace(/\b(release|debug|signed|unsigned|apk|dualabi|arm64v8|arm32v7|armv8|armv7|arm)\b/gi, ' ');
+    name = name.replace(/\s{2,}/g, ' ').trim();
     if (!name) name = filename.replace(/\.(apk|xapk|apks|apkm)$/i, '');
     return name.split(' ').map(function (w) {
+      if (w.toUpperCase() === w && w.length >= 2) return w;
       return w.charAt(0).toUpperCase() + w.slice(1);
     }).join(' ');
   }
@@ -306,51 +426,75 @@
     return mb.toFixed(1) + ' MB';
   }
 
-  function formatDate(isoStr) {
+  // Format BOTH Time (HH:mm) AND Date (DD/MM/YYYY) in local timezone
+  function formatDateTime(isoStr) {
     if (!isoStr) return '';
     try {
       var d = new Date(isoStr);
       if (isNaN(d.getTime())) return '';
+      var hours = ('0' + d.getHours()).slice(-2);
+      var mins = ('0' + d.getMinutes()).slice(-2);
       var day = ('0' + d.getDate()).slice(-2);
       var month = ('0' + (d.getMonth() + 1)).slice(-2);
       var year = d.getFullYear();
-      return day + '/' + month + '/' + year;
+      return hours + ':' + mins + ' • ' + day + '/' + month + '/' + year;
     } catch (e) {
       return '';
     }
   }
 
-  /* ===== PACKAGE NAME RESOLUTION ===== */
-  function resolvePackageName(fileName, cleanName) {
-    // 1. Check if native bridge extracted and saved real Android package name from APK
-    if (savedFilePkgMap && savedFilePkgMap[fileName]) {
+  /* ===== PACKAGE NAME RESOLUTION (EXACT + REAL MANIFEST) ===== */
+  function isValidAndroidPackage(pkg) {
+    if (!pkg || typeof pkg !== 'string') return false;
+    var parts = pkg.split('.');
+    if (parts.length < 3) return false;
+    if (/^\d/.test(parts[0]) || /^v\d+$/i.test(parts[0])) return false;
+    var prefixOk = /^(com|org|net|io|vn|ai|dev|me|cm|ru|se|tv|pl|ar|studio|app)$/i.test(parts[0]);
+    if (!prefixOk) return false;
+    for (var i = 0; i < parts.length; i++) {
+      if (!parts[i] || /^\d+$/.test(parts[i])) return false;
+    }
+    return /^[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*){2,}$/.test(pkg);
+  }
+
+  function resolvePackageName(fileName) {
+    var lower = fileName.toLowerCase();
+
+    // 1. Authoritative package read directly from AndroidManifest.xml via Native Bridge
+    if (savedFilePkgMap && savedFilePkgMap[fileName] && savedFilePkgMap[fileName].indexOf('.') !== -1) {
       return savedFilePkgMap[fileName];
     }
 
-    var fnNorm = normalizeStr(fileName).replace(/[^a-z0-9]/g, '');
-    var cleanNorm = normalizeStr(cleanName).replace(/[^a-z0-9]/g, '');
+    // 2. Exact filename dictionary verified directly from AndroidManifest.xml
+    if (EXACT_FILE_PACKAGES[lower]) {
+      return EXACT_FILE_PACKAGES[lower];
+    }
 
-    // 2. Direct dictionary matching
-    for (var k in KNOWN_PACKAGES) {
-      if (KNOWN_PACKAGES.hasOwnProperty(k)) {
-        if (fnNorm.indexOf(k) !== -1 || cleanNorm.indexOf(k) !== -1) {
-          return KNOWN_PACKAGES[k];
+    // 3. Extract explicit reverse-domain package embedded in filename (e.g. com.vproject.vapptv)
+    var rawNoExt = fileName.replace(/\.(apk|xapk|apks|apkm)$/i, '');
+    var dotMatches = rawNoExt.match(/[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*){2,}/g);
+    if (dotMatches) {
+      for (var d = 0; d < dotMatches.length; d++) {
+        if (isValidAndroidPackage(dotMatches[d])) {
+          return dotMatches[d];
         }
       }
     }
 
-    // 3. Reverse infer from package format if filename contains dots
-    var dotMatch = fileName.match(/([a-zA-Z][a-zA-Z0-9_]*\.[a-zA-Z][a-zA-Z0-9_]*\.[a-zA-Z0-9_.]+)/);
-    if (dotMatch && dotMatch[1]) {
-      return dotMatch[1];
+    // 4. Ordered specific pattern lookup (longest keys first, zero substring collisions)
+    var compactLower = normalizeStr(lower).replace(/[^a-z0-9_-]/g, '');
+    var ultraCompact = normalizeStr(lower).replace(/[^a-z0-9]/g, '');
+    for (var i = 0; i < ORDERED_PACKAGE_PATTERNS.length; i++) {
+      var pat = ORDERED_PACKAGE_PATTERNS[i][0];
+      var targetPkg = ORDERED_PACKAGE_PATTERNS[i][1];
+      var patCompact = pat.replace(/[^a-z0-9]/g, '');
+      if (compactLower.indexOf(pat) !== -1 || ultraCompact.indexOf(patCompact) !== -1) {
+        return targetPkg;
+      }
     }
 
-    // 4. Default clean package slug
-    var slug = normalizeStr(cleanName)
-      .replace(/[^a-z0-9]/g, '')
-      .slice(0, 16);
-    if (!slug) slug = 'app';
-    return 'com.chum.' + slug;
+    // 5. Honest status if brand-new unknown APK is viewed on Web before Android scans AndroidManifest.xml
+    return window.ChumNative ? 'Đang đọc package chuẩn...' : 'Chờ xác định package từ APK';
   }
 
   /* ===== ICON GENERATOR ===== */
@@ -398,7 +542,7 @@
     dom.errorState.style.display = 'none';
 
     if (!forceRefresh) {
-      var cached = getCachedData();
+      var cached = getCachedData(false);
       if (cached && cached.length > 0) {
         processRawAssets(cached);
         isLoading = false;
@@ -473,20 +617,21 @@
       var a = rawList[i];
       var lower = a.name.toLowerCase();
       var cName = cleanAppName(a.name);
+      var isoTime = a.updated_at || a.created_at;
+      var formattedDT = formatDateTime(isoTime);
 
-      // Check if self-update APK for CHUM STORE
       if (lower.indexOf('chum-store') !== -1 || lower.indexOf('chum_store') !== -1 || lower.indexOf('chumstore') !== -1) {
         selfUpdateApp = {
           name: a.name,
           cleanName: 'CHUM STORE',
           sizeFormatted: formatBytes(a.size || 0),
-          dateFormatted: formatDate(a.updated_at || a.created_at),
+          dateFormatted: formattedDT,
           download_url: a.browser_download_url,
-          updated_at: a.updated_at || a.created_at
+          updated_at: isoTime
         };
       }
 
-      var pkg = resolvePackageName(a.name, cName);
+      var pkg = resolvePackageName(a.name);
 
       items.push({
         id: a.id || i,
@@ -495,16 +640,15 @@
         packageName: pkg,
         size: a.size || 0,
         sizeFormatted: formatBytes(a.size || 0),
-        dateFormatted: formatDate(a.updated_at || a.created_at),
+        dateFormatted: formattedDT,
         created_at: a.created_at,
-        updated_at: a.updated_at || a.created_at,
+        updated_at: isoTime,
         download_url: a.browser_download_url,
         iconData: getAppIconData(a.name, cName)
       });
     }
 
-    // CRITICAL REQUIREMENT: "cái nào tải lên sau cùng hiện trên cùng"
-    // Sort descending by upload/update timestamp: newest upload appears at index 0
+    // Newest upload always appears at top
     items.sort(function (a, b) {
       var tA = new Date(a.updated_at || a.created_at || 0).getTime();
       var tB = new Date(b.updated_at || b.created_at || 0).getTime();
@@ -515,9 +659,12 @@
     hideSkeleton();
     renderCards();
     checkSelfUpdate();
+
+    // Ask Android Native Bridge to verify real AndroidManifest packages in background
+    triggerNativeRemotePackageResolve(rawList);
   }
 
-  /* ===== CARD ELEMENT (THẺ APK ĐƠN GIẢN: TÊN • PACKAGE • DL • NGÀY CẬP NHẬT) ===== */
+  /* ===== CARD ELEMENT (SOFT UI: TÊN • PACKAGE • DL • GIỜ & NGÀY CẬP NHẬT) ===== */
   function createCardElement(app, index) {
     var card = document.createElement('div');
     card.className = 'app-card focusable';
@@ -528,29 +675,25 @@
     card.setAttribute('data-filename', app.name);
     card.setAttribute('aria-label', app.cleanName + ', ' + app.packageName + ', ' + app.sizeFormatted + ', ' + app.dateFormatted);
 
-    // 1. Icon Squircle
     var icon = document.createElement('div');
     icon.className = 'app-card__icon' + (app.iconData.isEmoji ? ' app-card__icon--emoji' : '');
     icon.style.background = app.iconData.bg;
     icon.textContent = app.iconData.text;
 
-    // 2. Info Block (Tên app, Package Name, Dung lượng, Ngày cập nhật)
     var info = document.createElement('div');
     info.className = 'app-card__info';
 
-    // App Name
     var name = document.createElement('div');
     name.className = 'app-card__name';
     name.textContent = app.cleanName;
     name.title = app.name;
 
-    // Package Name
     var pkgEl = document.createElement('div');
     pkgEl.className = 'app-card__pkg';
     pkgEl.textContent = '📦 ' + app.packageName;
     pkgEl.title = 'Package: ' + app.packageName;
+    cardPkgElements[app.name] = pkgEl;
 
-    // Meta line: Dung lượng (dl) + Ngày cập nhật
     var meta = document.createElement('div');
     meta.className = 'app-card__meta';
 
@@ -562,7 +705,7 @@
     if (app.dateFormatted) {
       var bDate = document.createElement('span');
       bDate.className = 'badge-date';
-      bDate.textContent = '📅 ' + app.dateFormatted;
+      bDate.textContent = '🕒 ' + app.dateFormatted;
       meta.appendChild(bDate);
     }
 
@@ -573,7 +716,6 @@
     card.appendChild(icon);
     card.appendChild(info);
 
-    // REQUIREMENT: Nhấn vào là tải luôn! Không hiện chữ cài đặt hoặc mở
     card.addEventListener('click', function (e) {
       e.preventDefault();
       triggerDownload(app);
@@ -584,6 +726,7 @@
 
   function renderCards() {
     dom.cardsGrid.innerHTML = '';
+    cardPkgElements = {};
 
     if (allApps.length === 0) {
       dom.cardsGrid.style.display = 'none';
@@ -604,6 +747,18 @@
   }
 
   /* ===== 1-CLICK NATIVE IN-APP DOWNLOAD & INSTALL ===== */
+  var webDlHideTimer = null;
+
+  function setDownloadBannerState(badge, title, pctText, statsText, pctWidth) {
+    if (!dom.dlBanner) return;
+    dom.dlBanner.style.display = 'block';
+    if (dom.dlBannerBadge) dom.dlBannerBadge.textContent = badge;
+    if (dom.dlBannerTitle) dom.dlBannerTitle.textContent = title;
+    if (dom.dlBannerPct) dom.dlBannerPct.textContent = pctText;
+    if (dom.dlBannerStats) dom.dlBannerStats.textContent = statsText;
+    if (dom.dlBannerFill) dom.dlBannerFill.style.width = pctWidth + '%';
+  }
+
   function triggerDownload(app) {
     if (!app || !app.download_url) return;
 
@@ -611,18 +766,20 @@
 
     if (window.ChumNative && typeof window.ChumNative.downloadAndInstall === 'function') {
       try {
-        if (dom.dlBanner) {
-          dom.dlBanner.style.display = 'block';
-          dom.dlBannerTitle.textContent = '⬇️ Đang tải: ' + app.cleanName;
-          dom.dlBannerStats.textContent = '0% • ' + app.sizeFormatted;
-          dom.dlBannerFill.style.width = '0%';
-        }
+        if (dom.btnDlCancel) dom.btnDlCancel.textContent = '✕ Hủy';
+        setDownloadBannerState('⬇️', app.cleanName, '0%', app.sizeFormatted + ' • Đang kết nối...', 0);
         window.ChumNative.downloadAndInstall(app.download_url, app.name, app.cleanName, true);
         return;
       } catch (e) { /* fallback */ }
     }
 
-    showToast('⬇️ Đang tải: ' + app.cleanName + (app.sizeFormatted ? ' (' + app.sizeFormatted + ')' : ''));
+    if (dom.btnDlCancel) dom.btnDlCancel.textContent = '✕ Đóng';
+    setDownloadBannerState('⬇️', app.cleanName, 'Tải ngay', (app.sizeFormatted ? app.sizeFormatted + ' • ' : '') + 'Trình duyệt đang tải xuống...', 100);
+    if (webDlHideTimer) clearTimeout(webDlHideTimer);
+    webDlHideTimer = setTimeout(function () {
+      if (!window.ChumNative && dom.dlBanner) dom.dlBanner.style.display = 'none';
+    }, 5000);
+
     try {
       var a = document.createElement('a');
       a.href = app.download_url;
@@ -643,10 +800,10 @@
     return Math.round(bps / 1024) + ' KB/s';
   }
 
-  // Native progress callbacks: (fileName, percent, downloadedBytes, totalBytes, speedBps, status)
   window.onNativeDownloadProgress = function (fileName, progress, downloadedBytes, totalBytes, speedBps, status) {
     if (!dom.dlBanner) return;
     var pct = Math.min(100, Math.max(0, Number(progress) || 0));
+    var appTitle = cleanAppName(fileName);
 
     if (status === 'cancelled') {
       dom.dlBanner.style.display = 'none';
@@ -658,43 +815,35 @@
       return;
     }
     if (status === 'completed') {
-      dom.dlBanner.style.display = 'block';
-      dom.dlBannerTitle.textContent = '⚡ Đang mở trình cài đặt Android...';
-      dom.dlBannerStats.textContent = '100% • Sẵn sàng';
-      dom.dlBannerFill.style.width = '100%';
+      setDownloadBannerState('⚡', 'Mở cài đặt: ' + appTitle, '100%', 'Hoàn tất • Đang mở trình cài đặt...', 100);
       setTimeout(function () {
         if (dom.dlBanner) dom.dlBanner.style.display = 'none';
       }, 3500);
-      showToast('⚡ Mở cài đặt: ' + cleanAppName(fileName));
+      showToast('⚡ Mở cài đặt: ' + appTitle);
       return;
     }
     if (status === 'extracting_xapk') {
-      dom.dlBanner.style.display = 'block';
-      dom.dlBannerTitle.textContent = '📦 Đang giải nén: ' + cleanAppName(fileName);
-      dom.dlBannerStats.textContent = '100% • Đang chuẩn bị cài đặt...';
-      dom.dlBannerFill.style.width = '100%';
+      setDownloadBannerState('📦', 'Đang giải nén: ' + appTitle, '100%', 'Đang chuẩn bị cài đặt gói XAPK...', 100);
+      return;
+    }
+    if (status === 'connecting') {
+      setDownloadBannerState('🔗', 'Đang kết nối: ' + appTitle, '0%', 'Đang chuẩn bị tải...', 2);
       return;
     }
 
-    dom.dlBanner.style.display = 'block';
-    dom.dlBannerTitle.textContent = '⬇️ Đang tải: ' + cleanAppName(fileName);
     var sizeText = (totalBytes > 0)
       ? (formatBytes(downloadedBytes) + ' / ' + formatBytes(totalBytes))
       : formatBytes(downloadedBytes);
-    dom.dlBannerStats.textContent = pct + '% • ' + formatSpeed(speedBps) + (sizeText ? ' (' + sizeText + ')' : '');
-    dom.dlBannerFill.style.width = pct + '%';
+    setDownloadBannerState('⬇️', appTitle, pct + '%', formatSpeed(speedBps) + (sizeText ? ' • ' + sizeText : ''), pct);
   };
 
   window.onNativeDownloadComplete = function (fileName) {
-    if (dom.dlBanner) {
-      dom.dlBannerTitle.textContent = '⚡ Đang mở trình cài đặt Android...';
-      dom.dlBannerStats.textContent = '100% • Sẵn sàng';
-      dom.dlBannerFill.style.width = '100%';
-      setTimeout(function () {
-        if (dom.dlBanner) dom.dlBanner.style.display = 'none';
-      }, 3500);
-    }
-    showToast('⚡ Mở cài đặt: ' + cleanAppName(fileName));
+    var appTitle = cleanAppName(fileName);
+    setDownloadBannerState('⚡', 'Mở cài đặt: ' + appTitle, '100%', 'Hoàn tất • Sẵn sàng', 100);
+    setTimeout(function () {
+      if (dom.dlBanner) dom.dlBanner.style.display = 'none';
+    }, 3500);
+    showToast('⚡ Mở cài đặt: ' + appTitle);
   };
 
   window.onNativeDownloadFailed = function (fileName, errorMsg) {
@@ -729,17 +878,16 @@
   }
 
   /* ===== LAN WI-FI APK RECEIVER (APP) & QR APP DOWNLOAD (WEB) ===== */
-  var qrcodeInstance = null;
   function renderQr(text, fallbackEmoji) {
     if (!dom.lanQrBox) return;
     if (text && typeof QRCode !== 'undefined') {
       try {
         dom.lanQrBox.innerHTML = '';
-        qrcodeInstance = new QRCode(dom.lanQrBox, {
+        new QRCode(dom.lanQrBox, {
           text: text,
           width: 142,
           height: 142,
-          colorDark: '#000000',
+          colorDark: '#1e293b',
           colorLight: '#ffffff',
           correctLevel: QRCode.CorrectLevel.M
         });
@@ -748,7 +896,7 @@
         if (dom.lanStatusText) dom.lanStatusText.textContent = '⚠️ ' + qrErr.message;
       }
     }
-    dom.lanQrBox.innerHTML = '<div style="font-size:2.5rem;color:#000;">' + (fallbackEmoji || '📡') + '</div>';
+    dom.lanQrBox.innerHTML = '<div style="font-size:2.5rem;color:#3b6bf6;">' + (fallbackEmoji || '📡') + '</div>';
   }
 
   function getWebApkUrl() {
@@ -766,7 +914,6 @@
     isLanModalOpen = true;
     dom.lanOverlay.style.display = 'flex';
 
-    // Web Mode: Show direct App APK download button + QR code
     if (!window.ChumNative) {
       var apkUrl = getWebApkUrl();
       if (dom.lanModalIcon) dom.lanModalIcon.textContent = '📲';
@@ -789,7 +936,6 @@
       return;
     }
 
-    // Native App Mode: Embedded LAN Wi-Fi APK Receiver Server
     if (dom.lanModalIcon) dom.lanModalIcon.textContent = '📡';
     if (dom.lanTitle) dom.lanTitle.textContent = 'NHẬN FILE APK QUA WI-FI (LAN SEND)';
     if (dom.lanModalSub) dom.lanModalSub.textContent = 'Gửi bất kỳ file .APK / .XAPK nào từ Điện thoại sang thiết bị này';
@@ -887,7 +1033,7 @@
     rebuildFocusables();
   }
 
-  /* ===== D-PAD / REMOTE KEYBOARD NAVIGATION (ANDROID TV) ===== */
+  /* ===== D-PAD / REMOTE KEYBOARD NAVIGATION ===== */
   function rebuildFocusables() {
     if (isLanModalOpen) {
       focusables = Array.prototype.slice.call(dom.lanOverlay.querySelectorAll('.lan-focusable')).filter(function (el) {
@@ -910,7 +1056,6 @@
     }
 
     if (LAYOUT === 'tv' && currentFocusIndex < 0 && focusables.length > 0) {
-      // On TV, auto-focus first app card
       var firstCardIdx = -1;
       for (var i = 0; i < focusables.length; i++) {
         if (focusables[i].getAttribute('data-nav-group') === 'cards') {
@@ -1017,7 +1162,6 @@
     }
 
     var cur = currentFocusIndex;
-
     var currentEl = focusables[cur];
     var currentGroup = currentEl ? currentEl.getAttribute('data-nav-group') : 'cards';
 
@@ -1035,32 +1179,22 @@
       var topPos = topbarIndices.indexOf(cur);
       if (key === 'ArrowRight') {
         e.preventDefault();
-        if (topPos < topbarIndices.length - 1) {
-          setFocus(topbarIndices[topPos + 1]);
-        }
+        if (topPos < topbarIndices.length - 1) setFocus(topbarIndices[topPos + 1]);
       } else if (key === 'ArrowLeft') {
         e.preventDefault();
-        if (topPos > 0) {
-          setFocus(topbarIndices[topPos - 1]);
-        }
+        if (topPos > 0) setFocus(topbarIndices[topPos - 1]);
       } else if (key === 'ArrowDown') {
         e.preventDefault();
-        if (cardIndices.length > 0) {
-          setFocus(cardIndices[0]);
-        }
+        if (cardIndices.length > 0) setFocus(cardIndices[0]);
       }
     } else if (currentGroup === 'cards') {
       var cardPos = cardIndices.indexOf(cur);
       if (key === 'ArrowRight') {
         e.preventDefault();
-        if (cardPos < cardIndices.length - 1) {
-          setFocus(cardIndices[cardPos + 1]);
-        }
+        if (cardPos < cardIndices.length - 1) setFocus(cardIndices[cardPos + 1]);
       } else if (key === 'ArrowLeft') {
         e.preventDefault();
-        if (cardPos > 0) {
-          setFocus(cardIndices[cardPos - 1]);
-        }
+        if (cardPos > 0) setFocus(cardIndices[cardPos - 1]);
       } else if (key === 'ArrowDown') {
         e.preventDefault();
         var nextDown = cardPos + cols;
@@ -1081,18 +1215,33 @@
     }
   }
 
-  /* ===== THEME TOGGLE ===== */
+  /* ===== SOFT UI THEME TOGGLE (DEFAULT: SOFT LIGHT) ===== */
+  var THEME_KEY = 'chum_theme_v9';
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    var metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) {
+      metaTheme.setAttribute('content', theme === 'dark' ? '#1c212e' : '#e6ecf5');
+    }
+    if (window.ChumNative && typeof window.ChumNative.setSystemUiTheme === 'function') {
+      try {
+        window.ChumNative.setSystemUiTheme(theme);
+      } catch (e) { /* ignore */ }
+    }
+  }
+
   function initTheme() {
-    var saved = localStorage.getItem('chum_theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', saved);
+    var saved = localStorage.getItem(THEME_KEY) || 'light';
+    applyTheme(saved);
   }
 
   function toggleTheme() {
-    var current = document.documentElement.getAttribute('data-theme') || 'dark';
-    var next = current === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('chum_theme', next);
-    showToast(next === 'dark' ? '🌙 Chế độ tối' : '☀️ Chế độ sáng');
+    var current = document.documentElement.getAttribute('data-theme') || 'light';
+    var next = current === 'light' ? 'dark' : 'light';
+    localStorage.setItem(THEME_KEY, next);
+    applyTheme(next);
+    showToast(next === 'dark' ? '🌙 Soft UI Tối' : '☀️ Soft UI Sáng');
   }
 
   /* ===== INITIALIZATION ===== */
@@ -1139,11 +1288,12 @@
 
     if (dom.btnDlCancel) {
       dom.btnDlCancel.addEventListener('click', function () {
+        if (webDlHideTimer) clearTimeout(webDlHideTimer);
+        if (dom.dlBanner) dom.dlBanner.style.display = 'none';
         if (window.ChumNative && typeof window.ChumNative.cancelDownload === 'function') {
           window.ChumNative.cancelDownload(activeDownloadFileName);
+          showToast('⏹️ Đã hủy tải ứng dụng.');
         }
-        if (dom.dlBanner) dom.dlBanner.style.display = 'none';
-        showToast('⏹️ Đã hủy tải ứng dụng.');
       });
     }
 
