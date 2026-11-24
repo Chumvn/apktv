@@ -1,7 +1,8 @@
 /* ============================================================
-   CHUM STORE — SOFT UI EDITION
-   Giao diện Soft UI (Neumorphism) thống nhất cho Web, Điện thoại & Android TV
-   Tối ưu mượt mà 60fps trên mọi thiết bị Android TV Box, Mobile & Web
+   CHUM STORE — ULTRA-SMOOTH 60FPS SOFT UI EDITION
+   Tối ưu không khựng/giật trên Android Phone, Android TV Box & Web
+   - Loại bỏ bóng mờ đa lớp / inset blur trên thẻ danh sách lặp lại
+   - Mô phỏng khối nổi & lõm Soft UI bằng viền ánh sáng 3D tốc độ cao
    ============================================================ */
 
 *,
@@ -10,32 +11,36 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 :root,
 [data-theme="light"] {
-  /* Soft UI Light Palette (Default - đồng bộ Logo Soft UI) */
   --bg: #e6ecf5;
   --bg-topbar: #e6ecf5;
   --surface: #e6ecf5;
   --surface-hover: #edf2fa;
-  --card-bg: #e6ecf5;
-  --card-bg-hover: #ecf1fa;
-  --border-soft: rgba(255, 255, 255, 0.72);
+  --card-bg: #e8eef7;
+  --card-bg-hover: #eef3fb;
+
+  /* 3D Soft UI Bevel Colors (0% GPU blur cost!) */
+  --bevel-hi: #ffffff;
+  --bevel-lo: #cbd5e4;
+  --shadow-fast: rgba(30, 41, 59, 0.08);
+  --pill-bg: #dde5f1;
+  --pill-hi: #ffffff;
+  --pill-lo: #c4cfe0;
   --border-subtle: rgba(163, 177, 198, 0.28);
 
   --text: #1e293b;
   --text-dim: #52627a;
   --text-muted: #7a8aa3;
 
-  /* Soft UI Neumorphic Shadows */
-  --neu-out: 7px 7px 14px #c5cfe0, -7px -7px 14px #ffffff;
-  --neu-card: 5px 5px 11px #c6d0e0, -5px -5px 11px #ffffff;
-  --neu-in: inset 4px 4px 8px #c5cfe0, inset -4px -4px 8px #ffffff;
-  --neu-pill: inset 2px 2px 5px #c8d2e2, inset -2px -2px 5px #ffffff;
-  --neu-float: 0 18px 40px rgba(30, 41, 59, 0.16), 6px 6px 14px #c5cfe0, -6px -6px 14px #ffffff;
+  /* Rich Soft UI shadows ONLY on top-level/non-repeating controls */
+  --neu-btn: 4px 4px 8px #c6d0e0, -4px -4px 8px #ffffff;
+  --neu-in: inset 3px 3px 6px #c6d0e0, inset -3px -3px 6px #ffffff;
+  --neu-float: 0 14px 30px rgba(30, 41, 59, 0.22);
 
-  /* Soft UI Accents */
   --accent: #3b6bf6;
   --accent-2: #60a5fa;
   --accent-text: #ffffff;
@@ -44,36 +49,38 @@
   --accent-danger: #ef4444;
   --accent-success: #059669;
 
-  /* Radii & Typography */
-  --radius-xl: 24px;
-  --radius-lg: 20px;
-  --radius-md: 15px;
-  --radius-sm: 12px;
-  --radius-xs: 9px;
-  --font: 'Inter', system-ui, -apple-system, Roboto, 'Segoe UI', sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --radius-xl: 22px;
+  --radius-lg: 18px;
+  --radius-md: 14px;
+  --radius-sm: 11px;
+  --radius-xs: 8px;
+  --font: system-ui, -apple-system, Roboto, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 [data-theme="dark"] {
-  /* Soft UI Dark Neumorphism */
   --bg: #1c212e;
   --bg-topbar: #1c212e;
-  --surface: #1f2534;
-  --surface-hover: #252c3e;
-  --card-bg: #1f2534;
+  --surface: #202636;
+  --surface-hover: #262e40;
+  --card-bg: #202636;
   --card-bg-hover: #262e40;
-  --border-soft: rgba(255, 255, 255, 0.06);
+
+  --bevel-hi: #2d354a;
+  --bevel-lo: #121620;
+  --shadow-fast: rgba(0, 0, 0, 0.28);
+  --pill-bg: #171c28;
+  --pill-hi: #2a3246;
+  --pill-lo: #10141e;
   --border-subtle: rgba(0, 0, 0, 0.35);
 
   --text: #eef2f9;
   --text-dim: #9aa7be;
   --text-muted: #6c7a93;
 
-  --neu-out: 7px 7px 14px #121620, -7px -7px 14px #282f42;
-  --neu-card: 5px 5px 11px #131722, -5px -5px 11px #272e40;
-  --neu-in: inset 4px 4px 8px #121620, inset -4px -4px 8px #282f42;
-  --neu-pill: inset 2px 2px 5px #141824, inset -2px -2px 5px #262e40;
-  --neu-float: 0 20px 44px rgba(0, 0, 0, 0.55), 6px 6px 14px #121620, -6px -6px 14px #282f42;
+  --neu-btn: 4px 4px 8px #121620, -4px -4px 8px #272f42;
+  --neu-in: inset 3px 3px 6px #121620, inset -3px -3px 6px #272f42;
+  --neu-float: 0 16px 34px rgba(0, 0, 0, 0.52);
 
   --accent: #4c7bf7;
   --accent-2: #72b3ff;
@@ -92,15 +99,13 @@ html {
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: 100%;
   overflow-x: hidden;
-  scroll-behavior: auto;
 }
 
 body {
   min-height: 100vh;
   background: var(--bg);
   color: var(--text);
-  padding-bottom: 72px;
-  -webkit-overflow-scrolling: touch;
+  padding-bottom: 84px;
   overflow-x: hidden;
 }
 
@@ -109,26 +114,26 @@ a {
   color: inherit;
 }
 
-/* ================= TV & ACCESSIBILITY FOCUS RING (SOFT GLOW) ================= */
+/* ================= TV & ACCESSIBILITY FOCUS RING ================= */
 .focusable:focus,
 .lan-focusable:focus,
 .tv-focused,
 .focusable.tv-focused,
 .lan-focusable.tv-focused {
   outline: none !important;
-  box-shadow: 0 0 0 3px var(--accent), var(--neu-card) !important;
+  box-shadow: 0 0 0 3px var(--accent) !important;
   z-index: 10 !important;
 }
 
 .focusable:focus:not(:focus-visible):not(.tv-focused),
 .lan-focusable:focus:not(:focus-visible):not(.tv-focused) {
-  box-shadow: var(--neu-card) !important;
+  box-shadow: none !important;
 }
 
 .focusable:focus-visible,
 .lan-focusable:focus-visible {
   outline: none !important;
-  box-shadow: 0 0 0 3px var(--accent), var(--neu-card) !important;
+  box-shadow: 0 0 0 3px var(--accent) !important;
 }
 
 /* ================= TOPBAR (SOFT UI HEADER + SINGLE-ROW PILL BAR) ================= */
@@ -137,8 +142,8 @@ a {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  padding: 16px 16px 18px;
+  gap: 13px;
+  padding: 15px 16px 17px;
   background: var(--bg-topbar);
   border-bottom: 1px solid var(--border-subtle);
   text-align: center;
@@ -169,9 +174,9 @@ a {
 }
 
 .brand__name {
-  font-size: 1.62rem;
+  font-size: 1.6rem;
   font-weight: 900;
-  letter-spacing: 1.2px;
+  letter-spacing: 1px;
   color: var(--text);
   white-space: nowrap;
   display: inline-flex;
@@ -187,13 +192,12 @@ a {
   color: var(--text);
 }
 
-/* Action Toolbar Buttons Row - Always single row */
 .topbar__btn-row {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: nowrap !important;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
   max-width: 560px;
   margin: 0 auto;
@@ -204,14 +208,17 @@ a {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  height: 42px;
+  height: 41px;
   padding: 0 14px;
   flex: 1 1 0;
   min-width: 0;
   background: var(--surface);
-  border: 1px solid var(--border-soft);
+  border-top: 1.5px solid var(--bevel-hi);
+  border-left: 1.5px solid var(--bevel-hi);
+  border-bottom: 1.5px solid var(--bevel-lo);
+  border-right: 1.5px solid var(--bevel-lo);
   border-radius: var(--radius-md);
-  box-shadow: var(--neu-card);
+  box-shadow: var(--neu-btn);
   color: var(--text);
   font-family: var(--font);
   font-size: 0.82rem;
@@ -219,7 +226,6 @@ a {
   cursor: pointer;
   white-space: nowrap;
   user-select: none;
-  transition: transform 0.12s ease, box-shadow 0.15s ease;
 }
 
 @media (max-width: 480px) {
@@ -227,7 +233,7 @@ a {
     gap: 8px;
   }
   .topbar-btn {
-    height: 40px;
+    height: 39px;
     padding: 0 6px;
     font-size: 0.74rem;
     gap: 4px;
@@ -239,14 +245,14 @@ a {
   }
 }
 
-.topbar-btn:hover {
-  background: var(--surface-hover);
-  transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .topbar-btn:hover {
+    background: var(--surface-hover);
+  }
 }
 
 .topbar-btn:active {
   box-shadow: var(--neu-in);
-  transform: scale(0.97);
 }
 
 .topbar-btn--gold {
@@ -267,11 +273,14 @@ a {
 .self-update-banner {
   max-width: 1200px;
   margin: 14px auto 0;
-  padding: 14px 18px;
-  background: var(--surface);
-  border: 1px solid var(--border-soft);
+  padding: 13px 16px;
+  background: var(--card-bg);
+  border-top: 1.5px solid var(--bevel-hi);
+  border-left: 1.5px solid var(--bevel-hi);
+  border-bottom: 1.5px solid var(--bevel-lo);
+  border-right: 1.5px solid var(--bevel-lo);
   border-radius: var(--radius-lg);
-  box-shadow: var(--neu-card);
+  box-shadow: 0 3px 8px var(--shadow-fast);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -283,13 +292,13 @@ a {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 0.86rem;
+  font-size: 0.85rem;
   font-weight: 700;
 }
 
 .self-update-banner__pill {
-  padding: 4px 10px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  padding: 3px 10px;
+  background: var(--accent);
   color: #fff;
   font-size: 0.72rem;
   font-weight: 800;
@@ -297,12 +306,11 @@ a {
 }
 
 .self-update-banner__btn {
-  padding: 9px 18px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  padding: 9px 16px;
+  background: var(--accent);
   color: #fff;
   border: none;
   border-radius: var(--radius-sm);
-  box-shadow: 0 6px 16px rgba(59, 107, 246, 0.35);
   font-weight: 800;
   font-size: 0.82rem;
   cursor: pointer;
@@ -311,74 +319,79 @@ a {
 /* ================= MAIN CONTENT & APPS GRID ================= */
 .main-content {
   max-width: 1320px;
-  margin: 16px auto 0;
-  padding: 0 18px;
+  margin: 14px auto 0;
+  padding: 0 16px;
 }
 
 .cards-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 14px;
+  gap: 12px;
 }
 
 @media (min-width: 720px) {
   .cards-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+    gap: 14px;
   }
 }
 
 @media (min-width: 1100px) {
   .cards-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
+    gap: 16px;
   }
 }
 
-/* ================= SOFT UI APP CARD ================= */
+/* ================= FAST 60FPS SOFT UI APP CARD ================= */
 .app-card {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 15px 16px;
+  gap: 13px;
+  padding: 14px 15px;
   background: var(--card-bg);
-  border: 1px solid var(--border-soft);
+  border-top: 1.5px solid var(--bevel-hi);
+  border-left: 1.5px solid var(--bevel-hi);
+  border-bottom: 1.5px solid var(--bevel-lo);
+  border-right: 1.5px solid var(--bevel-lo);
   border-radius: var(--radius-lg);
-  box-shadow: var(--neu-card);
+  box-shadow: 0 3px 6px var(--shadow-fast);
   cursor: pointer;
   user-select: none;
-  contain: layout style paint;
-  transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease;
+  contain: layout style;
 }
 
-.app-card:hover {
-  background: var(--card-bg-hover);
-  transform: translateY(-2px);
+@media (hover: hover) and (pointer: fine) {
+  .app-card:hover {
+    background: var(--card-bg-hover);
+  }
 }
 
 .app-card:active {
-  box-shadow: var(--neu-in);
-  transform: scale(0.98);
+  background: var(--pill-bg);
+  border-top-color: var(--bevel-lo);
+  border-left-color: var(--bevel-lo);
+  border-bottom-color: var(--bevel-hi);
+  border-right-color: var(--bevel-hi);
+  box-shadow: none;
 }
 
 .app-card.tv-focused {
   outline: none !important;
-  box-shadow: 0 0 0 3px var(--accent), var(--neu-out) !important;
+  box-shadow: 0 0 0 3px var(--accent) !important;
   background: var(--card-bg-hover) !important;
-  transform: scale(1.02);
   z-index: 5 !important;
 }
 
 .app-card__icon {
-  width: 54px;
-  height: 54px;
+  width: 52px;
+  height: 52px;
   border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  box-shadow: 4px 4px 10px rgba(15, 23, 42, 0.16), -2px -2px 6px rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.45rem;
+  font-size: 1.4rem;
   font-weight: 900;
   color: #fff;
   flex-shrink: 0;
@@ -393,13 +406,14 @@ a {
 }
 
 .app-card__name {
-  font-size: 0.98rem;
+  font-size: 0.96rem;
   font-weight: 800;
   color: var(--text);
   line-height: 1.25;
   word-break: break-word;
 }
 
+/* Recessed Soft UI Pills via crisp 3D inner borders (ZERO GPU shadow blur!) */
 .app-card__pkg {
   display: inline-block;
   align-self: flex-start;
@@ -408,8 +422,11 @@ a {
   font-size: 0.72rem;
   font-weight: 700;
   color: var(--accent-cyan);
-  background: var(--surface);
-  box-shadow: var(--neu-pill);
+  background: var(--pill-bg);
+  border-top: 1px solid var(--pill-lo);
+  border-left: 1px solid var(--pill-lo);
+  border-bottom: 1px solid var(--pill-hi);
+  border-right: 1px solid var(--pill-hi);
   padding: 3px 8px;
   border-radius: var(--radius-xs);
   word-break: break-all;
@@ -419,8 +436,8 @@ a {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 7px;
-  margin-top: 2px;
+  gap: 6px;
+  margin-top: 1px;
 }
 
 .badge-size,
@@ -429,9 +446,12 @@ a {
   font-size: 0.69rem;
   font-weight: 700;
   color: var(--text-dim);
-  background: var(--surface);
-  box-shadow: var(--neu-pill);
-  padding: 3px 8px;
+  background: var(--pill-bg);
+  border-top: 1px solid var(--pill-lo);
+  border-left: 1px solid var(--pill-lo);
+  border-bottom: 1px solid var(--pill-hi);
+  border-right: 1px solid var(--pill-hi);
+  padding: 2px 8px;
   border-radius: var(--radius-xs);
   white-space: nowrap;
 }
@@ -440,34 +460,35 @@ a {
 .skeleton-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 14px;
+  gap: 12px;
 }
 
 @media (min-width: 720px) {
-  .skeleton-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .skeleton-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
 }
 
 @media (min-width: 1100px) {
-  .skeleton-grid { grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .skeleton-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
 }
 
 .skeleton-card {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 15px 16px;
+  gap: 13px;
+  padding: 14px 15px;
   background: var(--card-bg);
-  border: 1px solid var(--border-soft);
+  border-top: 1.5px solid var(--bevel-hi);
+  border-left: 1.5px solid var(--bevel-hi);
+  border-bottom: 1.5px solid var(--bevel-lo);
+  border-right: 1.5px solid var(--bevel-lo);
   border-radius: var(--radius-lg);
-  box-shadow: var(--neu-card);
 }
 
 .sk-icon {
-  width: 54px;
-  height: 54px;
+  width: 52px;
+  height: 52px;
   border-radius: var(--radius-md);
-  background: var(--surface);
-  box-shadow: var(--neu-in);
+  background: var(--pill-bg);
   flex-shrink: 0;
 }
 
@@ -475,13 +496,12 @@ a {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 8px;
 }
 
 .sk-line {
   height: 12px;
-  background: var(--surface);
-  box-shadow: var(--neu-pill);
+  background: var(--pill-bg);
   border-radius: 999px;
 }
 
@@ -492,17 +512,20 @@ a {
 .empty-state,
 .error-state {
   text-align: center;
-  padding: 42px 24px;
-  background: var(--surface);
-  border: 1px solid var(--border-soft);
+  padding: 40px 22px;
+  background: var(--card-bg);
+  border-top: 1.5px solid var(--bevel-hi);
+  border-left: 1.5px solid var(--bevel-hi);
+  border-bottom: 1.5px solid var(--bevel-lo);
+  border-right: 1.5px solid var(--bevel-lo);
   border-radius: var(--radius-xl);
-  box-shadow: var(--neu-card);
+  box-shadow: 0 3px 8px var(--shadow-fast);
   margin-top: 20px;
 }
 
 .empty-state__icon,
 .error-state__icon {
-  font-size: 2.3rem;
+  font-size: 2.2rem;
   margin-bottom: 10px;
 }
 
@@ -516,11 +539,10 @@ a {
 .btn-retry {
   margin-top: 16px;
   padding: 10px 22px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  background: var(--accent);
   color: #fff;
   border: none;
   border-radius: var(--radius-sm);
-  box-shadow: 0 6px 16px rgba(59, 107, 246, 0.35);
   font-weight: 800;
   cursor: pointer;
 }
@@ -532,9 +554,7 @@ a {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(15, 23, 42, 0.58);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -544,7 +564,10 @@ a {
 
 .modal-box {
   background: var(--surface);
-  border: 1px solid var(--border-soft);
+  border-top: 1.5px solid var(--bevel-hi);
+  border-left: 1.5px solid var(--bevel-hi);
+  border-bottom: 1.5px solid var(--bevel-lo);
+  border-right: 1.5px solid var(--bevel-lo);
   border-radius: var(--radius-xl);
   box-shadow: var(--neu-float);
   max-width: 600px;
@@ -575,8 +598,11 @@ a {
   width: 42px;
   height: 42px;
   border-radius: 14px;
-  background: var(--surface);
-  box-shadow: var(--neu-in);
+  background: var(--pill-bg);
+  border-top: 1px solid var(--pill-lo);
+  border-left: 1px solid var(--pill-lo);
+  border-bottom: 1px solid var(--pill-hi);
+  border-right: 1px solid var(--pill-hi);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -601,9 +627,11 @@ a {
   width: 36px;
   height: 36px;
   background: var(--surface);
-  border: 1px solid var(--border-soft);
+  border-top: 1.5px solid var(--bevel-hi);
+  border-left: 1.5px solid var(--bevel-hi);
+  border-bottom: 1.5px solid var(--bevel-lo);
+  border-right: 1.5px solid var(--bevel-lo);
   border-radius: 50%;
-  box-shadow: var(--neu-card);
   color: var(--text);
   font-size: 1rem;
   font-weight: 800;
@@ -640,7 +668,7 @@ a {
   height: 158px;
   background: #ffffff;
   border-radius: var(--radius-md);
-  box-shadow: var(--neu-card);
+  border: 2px solid var(--bevel-lo);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -675,8 +703,11 @@ a {
   font-size: 0.86rem;
   font-weight: 700;
   color: var(--accent);
-  background: var(--surface);
-  box-shadow: var(--neu-in);
+  background: var(--pill-bg);
+  border-top: 1px solid var(--pill-lo);
+  border-left: 1px solid var(--pill-lo);
+  border-bottom: 1px solid var(--pill-hi);
+  border-right: 1px solid var(--pill-hi);
   padding: 10px 12px;
   border-radius: var(--radius-sm);
   word-break: break-all;
@@ -698,24 +729,17 @@ a {
   color: #ffffff;
   border: none;
   border-radius: var(--radius-sm);
-  box-shadow: 0 8px 18px rgba(59, 107, 246, 0.35);
   font-size: 0.88rem;
   font-weight: 800;
   text-align: center;
   cursor: pointer;
-  transition: transform 0.12s ease, filter 0.15s ease;
-}
-
-.lan-download-btn:hover {
-  filter: brightness(1.06);
-  transform: translateY(-1px);
 }
 
 .lan-download-btn:active {
-  transform: scale(0.98);
+  opacity: 0.9;
 }
 
-/* ================= FLOATING SOFT UI DOWNLOAD CARD (KHUNG TẢI ĐẸP) ================= */
+/* ================= FLOATING SOFT UI DOWNLOAD CARD (KHUNG TẢI ĐẸP, 60FPS) ================= */
 .dl-banner {
   position: fixed;
   bottom: 18px;
@@ -724,31 +748,21 @@ a {
   width: calc(100% - 24px);
   max-width: 540px;
   z-index: 20000;
-  animation: dlSlideUp 0.16s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-@keyframes dlSlideUp {
-  from {
-    transform: translate(-50%, 14px);
-  }
-  to {
-    transform: translate(-50%, 0);
-  }
 }
 
 .dl-banner__card {
   background: var(--surface);
-  border: 1.5px solid rgba(59, 107, 246, 0.4);
+  border: 1.5px solid rgba(59, 107, 246, 0.45);
   border-radius: 22px;
-  box-shadow: 0 20px 46px rgba(15, 23, 42, 0.34), var(--neu-out);
-  padding: 15px 17px;
+  box-shadow: var(--neu-float);
+  padding: 14px 16px;
 }
 
 .dl-banner__top {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 11px;
 }
 
 .dl-banner__badge {
@@ -757,18 +771,11 @@ a {
   border-radius: 14px;
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
   color: #fff;
-  box-shadow: 0 6px 14px rgba(59, 107, 246, 0.36);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.25rem;
   flex-shrink: 0;
-  animation: pulseBadge 1.5s ease-in-out infinite;
-}
-
-@keyframes pulseBadge {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.06); }
 }
 
 .dl-banner__info {
@@ -803,7 +810,6 @@ a {
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
   padding: 2px 9px;
   border-radius: 999px;
-  box-shadow: 0 3px 8px rgba(59, 107, 246, 0.3);
 }
 
 .dl-banner__stats {
@@ -817,9 +823,11 @@ a {
   padding: 8px 13px;
   background: var(--surface);
   color: var(--accent-danger);
-  border: 1px solid var(--border-soft);
+  border-top: 1.5px solid var(--bevel-hi);
+  border-left: 1.5px solid var(--bevel-hi);
+  border-bottom: 1.5px solid var(--bevel-lo);
+  border-right: 1.5px solid var(--bevel-lo);
   border-radius: 12px;
-  box-shadow: var(--neu-card);
   font-size: 0.74rem;
   font-weight: 800;
   cursor: pointer;
@@ -832,8 +840,11 @@ a {
 
 .dl-banner__track {
   height: 11px;
-  background: var(--surface);
-  box-shadow: var(--neu-in);
+  background: var(--pill-bg);
+  border-top: 1px solid var(--pill-lo);
+  border-left: 1px solid var(--pill-lo);
+  border-bottom: 1px solid var(--pill-hi);
+  border-right: 1px solid var(--pill-hi);
   border-radius: 999px;
   overflow: hidden;
   padding: 2px;
@@ -842,16 +853,8 @@ a {
 .dl-banner__fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--accent), var(--accent-2), #38bdf8, var(--accent));
-  background-size: 200% 100%;
-  box-shadow: 0 0 10px rgba(59, 107, 246, 0.45);
-  transition: width 0.2s ease;
-  animation: shimmerTrack 1.8s linear infinite;
-}
-
-@keyframes shimmerTrack {
-  0% { background-position: 100% 0; }
-  100% { background-position: -100% 0; }
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 0.16s linear;
 }
 
 /* ================= SOFT UI TOAST NOTIFICATION ================= */
@@ -862,18 +865,21 @@ a {
   transform: translateX(-50%);
   background: var(--surface);
   color: var(--text);
-  border: 1px solid var(--border-soft);
+  border-top: 1.5px solid var(--bevel-hi);
+  border-left: 1.5px solid var(--bevel-hi);
+  border-bottom: 1.5px solid var(--bevel-lo);
+  border-right: 1.5px solid var(--bevel-lo);
   border-radius: 999px;
   box-shadow: var(--neu-float);
   padding: 11px 22px;
   font-size: 0.84rem;
   font-weight: 800;
-  z-index: 10001;
+  z-index: 20001;
   max-width: 90%;
   text-align: center;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.22s ease;
+  transition: opacity 0.18s ease;
 }
 
 .toast.show {
@@ -881,7 +887,6 @@ a {
 }
 
 /* ================= DEVICE-SPECIFIC ADAPTATIONS ================= */
-/* Android TV Layout Mode */
 [data-layout="tv"] .main-content {
   max-width: 1400px;
   padding: 0 32px 32px;
@@ -889,7 +894,7 @@ a {
 
 [data-layout="tv"] .cards-grid {
   grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
+  gap: 16px;
 }
 
 @media (max-width: 1199px) {
@@ -899,32 +904,30 @@ a {
 }
 
 [data-layout="tv"] .app-card__name {
-  font-size: 1.05rem;
+  font-size: 1.04rem;
 }
 
 [data-layout="tv"] .app-card__pkg {
   font-size: 0.76rem;
 }
 
-/* Android Phone / Mobile Layout Mode */
 [data-layout="mobile"] .main-content {
-  padding: 0 14px 28px;
+  padding: 0 12px 24px;
 }
 
 @media (max-width: 719px) {
   [data-layout="mobile"] .cards-grid {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 11px;
   }
 }
 
 [data-layout="mobile"] .app-card {
-  padding: 13px 15px;
-  gap: 13px;
+  padding: 12px 14px;
+  gap: 12px;
 }
 
-/* Desktop Web Layout Mode */
 [data-layout="desktop"] .main-content {
   max-width: 1320px;
-  padding: 0 24px 40px;
+  padding: 0 24px 36px;
 }

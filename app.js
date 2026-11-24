@@ -320,19 +320,32 @@
     } catch (e) { /* ignore */ }
   }
 
+  var remoteResolveTimer = null;
+
   function triggerNativeRemotePackageResolve(rawList) {
     if (!window.ChumNative || typeof window.ChumNative.resolveRemotePackagesAsync !== 'function') return;
-    try {
-      var payload = rawList.map(function (a) {
-        return {
-          name: a.name,
-          url: a.browser_download_url,
-          size: a.size || 0,
-          updated_at: a.updated_at || a.created_at || ''
-        };
-      });
-      window.ChumNative.resolveRemotePackagesAsync(JSON.stringify(payload));
-    } catch (e) { /* ignore */ }
+    if (remoteResolveTimer) clearTimeout(remoteResolveTimer);
+    remoteResolveTimer = setTimeout(function () {
+      try {
+        var unresolved = [];
+        for (var i = 0; i < rawList.length; i++) {
+          var a = rawList[i];
+          var fn = a && a.name ? a.name : '';
+          var lower = fn.toLowerCase();
+          if (!fn || lower.slice(-4) !== '.apk') continue;
+          if (EXACT_FILE_PACKAGES[lower] || savedFilePkgMap[fn]) continue;
+          unresolved.push({
+            name: fn,
+            url: a.browser_download_url,
+            size: a.size || 0,
+            updated_at: a.updated_at || a.created_at || ''
+          });
+        }
+        if (unresolved.length > 0) {
+          window.ChumNative.resolveRemotePackagesAsync(JSON.stringify(unresolved));
+        }
+      } catch (e) { /* ignore */ }
+    }, 650);
   }
 
   window.onNativeRemotePackagesResolved = function (resolvedMap) {
@@ -1036,9 +1049,9 @@
   /* ===== D-PAD / REMOTE KEYBOARD NAVIGATION ===== */
   function rebuildFocusables() {
     if (isLanModalOpen) {
-      focusables = Array.prototype.slice.call(dom.lanOverlay.querySelectorAll('.lan-focusable')).filter(function (el) {
-        return el.offsetParent !== null;
-      });
+      focusables = [];
+      if (dom.btnLanClose) focusables.push(dom.btnLanClose);
+      if (dom.btnWebApkDl && dom.btnWebApkDl.style.display !== 'none') focusables.push(dom.btnWebApkDl);
       if (focusables.length > 0) {
         var defaultIdx = (!window.ChumNative && focusables.length > 1) ? 1 : 0;
         setFocus(defaultIdx);
@@ -1046,10 +1059,22 @@
       return;
     }
 
-    var all = document.querySelectorAll('.focusable');
-    focusables = Array.prototype.slice.call(all).filter(function (el) {
-      return el.offsetParent !== null;
-    });
+    focusables = [];
+    if (dom.btnRefresh) focusables.push(dom.btnRefresh);
+    if (dom.btnLanSend) focusables.push(dom.btnLanSend);
+    if (dom.btnTheme) focusables.push(dom.btnTheme);
+    if (dom.selfUpdateBanner && dom.selfUpdateBanner.style.display !== 'none' && dom.btnSelfUpdate) {
+      focusables.push(dom.btnSelfUpdate);
+    }
+    if (dom.cardsGrid && dom.cardsGrid.style.display !== 'none') {
+      var cards = dom.cardsGrid.children;
+      for (var c = 0; c < cards.length; c++) {
+        focusables.push(cards[c]);
+      }
+    }
+    if (dom.errorState && dom.errorState.style.display !== 'none' && dom.btnRetry) {
+      focusables.push(dom.btnRetry);
+    }
 
     if (currentFocusIndex >= focusables.length) {
       currentFocusIndex = focusables.length - 1;
