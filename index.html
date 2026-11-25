@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png?v=16">
   <link rel="apple-touch-icon" href="./icon-192.png?v=16">
   <title>CHUM STORE</title>
-  <link rel="stylesheet" href="./style.css?v=9.1">
+  <link rel="stylesheet" href="./style.css?v=9.2">
   <link rel="manifest" href="./manifest.webmanifest">
 </head>
 
@@ -120,8 +120,10 @@
           <div class="dl-banner__meta">
             <span class="dl-banner__pct" id="dl-banner-pct">0%</span>
             <span class="dl-banner__stats" id="dl-banner-stats">Đang kết nối...</span>
+            <span class="dl-banner__time" id="dl-banner-time" style="display:none"></span>
           </div>
         </div>
+        <button id="btn-dl-install" class="dl-banner__install focusable" style="display:none" title="Mở bảng cài đặt">⚡ Cài đặt</button>
         <button id="btn-dl-cancel" class="dl-banner__cancel focusable" title="Hủy tải">✕ Hủy</button>
       </div>
       <div class="dl-banner__track">
@@ -134,11 +136,11 @@
   <div id="toast" class="toast" role="alert" aria-live="assertive" style="display:none"></div>
 
   <script src="./qrcode.min.js"></script>
-  <script src="./app.js?v=9.1"></script>
+  <script src="./app.js?v=9.2"></script>
   <script>
     if (!window.ChumNative && 'serviceWorker' in navigator && /^https?:/.test(location.protocol)) {
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('./sw.js?v=9.1').catch(function () {});
+        navigator.serviceWorker.register('./sw.js?v=9.2').catch(function () {});
       });
     }
   </script>

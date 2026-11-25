@@ -49,6 +49,13 @@
   --accent-danger: #ef4444;
   --accent-success: #059669;
 
+  /* Highlighted Red Time Pill Colors */
+  --time-red: #dc2626;
+  --time-red-strong: #b91c1c;
+  --time-pill-bg: #fee2e2;
+  --time-pill-hi: #ffffff;
+  --time-pill-lo: #fca5a5;
+
   --radius-xl: 22px;
   --radius-lg: 18px;
   --radius-md: 14px;
@@ -89,6 +96,13 @@
   --accent-gold: #fbbf24;
   --accent-danger: #f87171;
   --accent-success: #34d399;
+
+  /* Highlighted Red Time Pill Colors (Dark Mode) */
+  --time-red: #ff6b6b;
+  --time-red-strong: #ff4d4f;
+  --time-pill-bg: rgba(239, 68, 68, 0.18);
+  --time-pill-hi: rgba(252, 165, 165, 0.30);
+  --time-pill-lo: rgba(153, 27, 27, 0.65);
 }
 
 html {
@@ -440,8 +454,7 @@ a {
   margin-top: 1px;
 }
 
-.badge-size,
-.badge-date {
+.badge-size {
   font-family: var(--font-mono);
   font-size: 0.69rem;
   font-weight: 700;
@@ -454,6 +467,26 @@ a {
   padding: 2px 8px;
   border-radius: var(--radius-xs);
   white-space: nowrap;
+}
+
+.badge-date {
+  font-family: var(--font-mono);
+  font-size: 0.71rem;
+  font-weight: 800;
+  color: var(--time-red);
+  background: var(--time-pill-bg);
+  border-top: 1px solid var(--time-pill-lo);
+  border-left: 1px solid var(--time-pill-lo);
+  border-bottom: 1px solid var(--time-pill-hi);
+  border-right: 1px solid var(--time-pill-hi);
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  white-space: nowrap;
+}
+
+.badge-date__time {
+  color: var(--time-red-strong);
+  font-weight: 900;
 }
 
 /* ================= SKELETON LOADING GRID ================= */
@@ -817,6 +850,37 @@ a {
   font-size: 0.74rem;
   color: var(--text-dim);
   font-weight: 700;
+}
+
+.dl-banner__time {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: var(--time-red-strong);
+  background: var(--time-pill-bg);
+  border-top: 1px solid var(--time-pill-lo);
+  border-left: 1px solid var(--time-pill-lo);
+  border-bottom: 1px solid var(--time-pill-hi);
+  border-right: 1px solid var(--time-pill-hi);
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.dl-banner__install {
+  padding: 8px 13px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.dl-banner__install:active {
+  opacity: 0.88;
 }
 
 .dl-banner__cancel {

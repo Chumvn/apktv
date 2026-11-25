@@ -175,6 +175,7 @@
     'chum-store.apk': 'CHUM STORE',
     'g_mark.apk': 'G MARK',
     'gvoice-soft-ui.apk': 'GVoice Soft UI',
+    'gvoice-chum.apk': 'GVoice Chum',
     'gvoice-ver-old.apk': 'GVoice Old',
     'gpro-fb-lite-dualabi-v536.apk': 'GPro Facebook Lite',
     'wifimod_cleanmod.apk': 'WiFi Master CleanMod',
@@ -232,6 +233,7 @@
   var savedFilePkgMap = {}; // fileName -> real packageName
   var cardPkgElements = {}; // fileName -> DOM element for live update
   var activeDownloadFileName = '';
+  var activeDownloadDateFormatted = '';
   var isLanModalOpen = false;
   var selfUpdateApp = null;
 
@@ -252,7 +254,9 @@
     dlBannerTitle: document.getElementById('dl-banner-title'),
     dlBannerPct: document.getElementById('dl-banner-pct'),
     dlBannerStats: document.getElementById('dl-banner-stats'),
+    dlBannerTime: document.getElementById('dl-banner-time'),
     dlBannerFill: document.getElementById('dl-banner-fill'),
+    btnDlInstall: document.getElementById('btn-dl-install'),
     btnDlCancel: document.getElementById('btn-dl-cancel'),
     selfUpdateBanner: document.getElementById('self-update-banner'),
     selfUpdateMsg: document.getElementById('self-update-msg'),
@@ -377,7 +381,7 @@
   };
 
   /* ===== CACHE STORAGE ===== */
-  var CACHE_KEY = 'chum_store_apps_cache_v9';
+  var CACHE_KEY = 'chum_store_apps_cache_v9_2';
 
   function getCachedData(allowExpired) {
     try {
@@ -439,21 +443,56 @@
     return mb.toFixed(1) + ' MB';
   }
 
-  // Format BOTH Time (HH:mm) AND Date (DD/MM/YYYY) in local timezone
-  function formatDateTime(isoStr) {
-    if (!isoStr) return '';
-    try {
-      var d = new Date(isoStr);
-      if (isNaN(d.getTime())) return '';
-      var hours = ('0' + d.getHours()).slice(-2);
-      var mins = ('0' + d.getMinutes()).slice(-2);
-      var day = ('0' + d.getDate()).slice(-2);
-      var month = ('0' + (d.getMonth() + 1)).slice(-2);
-      var year = d.getFullYear();
-      return hours + ':' + mins + ' • ' + day + '/' + month + '/' + year;
-    } catch (e) {
-      return '';
+  // Parse ISO-8601 UTC accurately across all Android WebViews & browsers
+  function parseIsoMs(isoStr) {
+    if (!isoStr) return 0;
+    if (typeof isoStr === 'number') return isoStr;
+    var m = String(isoStr).trim().match(/^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(Z|[+-]\d{2}:?\d{2})?$/i);
+    if (m) {
+      var utcMs = Date.UTC(
+        parseInt(m[1], 10),
+        parseInt(m[2], 10) - 1,
+        parseInt(m[3], 10),
+        parseInt(m[4], 10),
+        parseInt(m[5], 10),
+        parseInt(m[6], 10)
+      );
+      var tz = m[7];
+      if (tz && tz.toUpperCase() !== 'Z') {
+        var sign = tz.charAt(0) === '-' ? -1 : 1;
+        var cleanTz = tz.slice(1).replace(':', '');
+        var tzH = parseInt(cleanTz.slice(0, 2), 10) || 0;
+        var tzM = parseInt(cleanTz.slice(2, 4), 10) || 0;
+        utcMs -= sign * (tzH * 3600000 + tzM * 60000);
+      }
+      return utcMs;
     }
+    var d = new Date(isoStr);
+    return isNaN(d.getTime()) ? 0 : d.getTime();
+  }
+
+  // Always format in Vietnam Time (UTC+7 = +25,200,000 ms) so Android TV boxes with
+  // wrong firmware timezone (GMT+00 / GMT+08) always display exact Vietnam upload hour & date!
+  function formatDateTimeParts(isoOrMs) {
+    var utcMs = typeof isoOrMs === 'number' ? isoOrMs : parseIsoMs(isoOrMs);
+    if (!utcMs || utcMs <= 0) return { time: '', date: '', full: '' };
+    var vnDate = new Date(utcMs + 7 * 3600 * 1000);
+    var hours = ('0' + vnDate.getUTCHours()).slice(-2);
+    var mins = ('0' + vnDate.getUTCMinutes()).slice(-2);
+    var day = ('0' + vnDate.getUTCDate()).slice(-2);
+    var month = ('0' + (vnDate.getUTCMonth() + 1)).slice(-2);
+    var year = vnDate.getUTCFullYear();
+    var timeStr = hours + ':' + mins;
+    var dateStr = day + '/' + month + '/' + year;
+    return {
+      time: timeStr,
+      date: dateStr,
+      full: timeStr + ' • ' + dateStr
+    };
+  }
+
+  function formatDateTime(isoStr) {
+    return formatDateTimeParts(isoStr).full;
   }
 
   /* ===== PACKAGE NAME RESOLUTION (EXACT + REAL MANIFEST) ===== */
@@ -546,7 +585,7 @@
     return { text: initials, bg: bg, isEmoji: false };
   }
 
-  /* ===== FETCH & PROCESS DATA ===== */
+  /* ===== FETCH & PROCESS DATA (INSTANT CACHE + LIVE BACKGROUND SYNC) ===== */
   function fetchApps(forceRefresh) {
     if (isLoading) return;
     isLoading = true;
@@ -554,17 +593,18 @@
     if (dom.btnRefresh) dom.btnRefresh.classList.add('spinning');
     dom.errorState.style.display = 'none';
 
+    var renderedCached = false;
     if (!forceRefresh) {
-      var cached = getCachedData(false);
+      var cached = getCachedData(true);
       if (cached && cached.length > 0) {
         processRawAssets(cached);
-        isLoading = false;
-        if (dom.btnRefresh) dom.btnRefresh.classList.remove('spinning');
-        return;
+        renderedCached = true;
       }
     }
 
-    showSkeleton();
+    if (!renderedCached) {
+      showSkeleton();
+    }
 
     var apiUrl = 'https://api.github.com/repos/' + CONFIG.GITHUB_OWNER + '/' + CONFIG.GITHUB_REPO + '/releases/tags/' + CONFIG.RELEASE_TAG;
 
@@ -580,6 +620,7 @@
 
     fetch(apiUrl, {
       signal: signal,
+      cache: 'no-store',
       headers: { 'Accept': 'application/vnd.github.v3+json' }
     })
       .then(function (res) {
@@ -595,11 +636,19 @@
         }
         setCachedData(data.assets);
         processRawAssets(data.assets);
-        showToast('✅ Đã đồng bộ kho ứng dụng');
+        if (forceRefresh) {
+          showToast('✅ Đã đồng bộ kho ứng dụng mới nhất');
+        }
       })
       .catch(function (err) {
         isLoading = false;
         if (dom.btnRefresh) dom.btnRefresh.classList.remove('spinning');
+        if (renderedCached) {
+          if (forceRefresh) {
+            showToast('⚠️ Đang dùng dữ liệu đệm (' + err.message + ')');
+          }
+          return;
+        }
         var cached = getCachedData(true);
         if (cached && cached.length > 0) {
           processRawAssets(cached);
@@ -630,15 +679,19 @@
       var a = rawList[i];
       var lower = a.name.toLowerCase();
       var cName = cleanAppName(a.name);
+      var updatedMs = Math.max(parseIsoMs(a.updated_at), parseIsoMs(a.created_at));
       var isoTime = a.updated_at || a.created_at;
-      var formattedDT = formatDateTime(isoTime);
+      var dtParts = formatDateTimeParts(updatedMs);
 
       if (lower.indexOf('chum-store') !== -1 || lower.indexOf('chum_store') !== -1 || lower.indexOf('chumstore') !== -1) {
         selfUpdateApp = {
           name: a.name,
           cleanName: 'CHUM STORE',
           sizeFormatted: formatBytes(a.size || 0),
-          dateFormatted: formattedDT,
+          timeStr: dtParts.time,
+          dateStr: dtParts.date,
+          dateFormatted: dtParts.full,
+          timestampMs: updatedMs,
           download_url: a.browser_download_url,
           updated_at: isoTime
         };
@@ -653,7 +706,10 @@
         packageName: pkg,
         size: a.size || 0,
         sizeFormatted: formatBytes(a.size || 0),
-        dateFormatted: formattedDT,
+        timeStr: dtParts.time,
+        dateStr: dtParts.date,
+        dateFormatted: dtParts.full,
+        timestampMs: updatedMs,
         created_at: a.created_at,
         updated_at: isoTime,
         download_url: a.browser_download_url,
@@ -663,9 +719,7 @@
 
     // Newest upload always appears at top
     items.sort(function (a, b) {
-      var tA = new Date(a.updated_at || a.created_at || 0).getTime();
-      var tB = new Date(b.updated_at || b.created_at || 0).getTime();
-      return tB - tA;
+      return (b.timestampMs || 0) - (a.timestampMs || 0);
     });
 
     allApps = items;
@@ -718,7 +772,15 @@
     if (app.dateFormatted) {
       var bDate = document.createElement('span');
       bDate.className = 'badge-date';
-      bDate.textContent = '🕒 ' + app.dateFormatted;
+      if (app.timeStr && app.dateStr) {
+        var tSpan = document.createElement('span');
+        tSpan.className = 'badge-date__time';
+        tSpan.textContent = '🕒 ' + app.timeStr;
+        bDate.appendChild(tSpan);
+        bDate.appendChild(document.createTextNode(' • ' + app.dateStr));
+      } else {
+        bDate.textContent = '🕒 ' + app.dateFormatted;
+      }
       meta.appendChild(bDate);
     }
 
@@ -762,13 +824,36 @@
   /* ===== 1-CLICK NATIVE IN-APP DOWNLOAD & INSTALL ===== */
   var webDlHideTimer = null;
 
-  function setDownloadBannerState(badge, title, pctText, statsText, pctWidth) {
+  function findAppDateLabel(fileName) {
+    if (fileName) {
+      var lower = fileName.toLowerCase();
+      for (var i = 0; i < allApps.length; i++) {
+        if (allApps[i].name === fileName || allApps[i].name.toLowerCase() === lower) {
+          return allApps[i].dateFormatted || '';
+        }
+      }
+    }
+    return activeDownloadDateFormatted || '';
+  }
+
+  function setDownloadBannerState(badge, title, pctText, statsText, pctWidth, timeLabel, showInstallBtn) {
     if (!dom.dlBanner) return;
     dom.dlBanner.style.display = 'block';
     if (dom.dlBannerBadge) dom.dlBannerBadge.textContent = badge;
     if (dom.dlBannerTitle) dom.dlBannerTitle.textContent = title;
     if (dom.dlBannerPct) dom.dlBannerPct.textContent = pctText;
     if (dom.dlBannerStats) dom.dlBannerStats.textContent = statsText;
+    if (dom.dlBannerTime) {
+      if (timeLabel) {
+        dom.dlBannerTime.textContent = '🕒 ' + timeLabel;
+        dom.dlBannerTime.style.display = 'inline-block';
+      } else {
+        dom.dlBannerTime.style.display = 'none';
+      }
+    }
+    if (dom.btnDlInstall) {
+      dom.btnDlInstall.style.display = showInstallBtn ? 'inline-block' : 'none';
+    }
     if (dom.dlBannerFill) dom.dlBannerFill.style.width = pctWidth + '%';
   }
 
@@ -776,22 +861,39 @@
     if (!app || !app.download_url) return;
 
     activeDownloadFileName = app.name;
+    activeDownloadDateFormatted = app.dateFormatted || '';
+    if (webDlHideTimer) clearTimeout(webDlHideTimer);
 
     if (window.ChumNative && typeof window.ChumNative.downloadAndInstall === 'function') {
       try {
         if (dom.btnDlCancel) dom.btnDlCancel.textContent = '✕ Hủy';
-        setDownloadBannerState('⬇️', app.cleanName, '0%', app.sizeFormatted + ' • Đang kết nối...', 0);
+        setDownloadBannerState(
+          '⬇️',
+          app.cleanName,
+          '0%',
+          app.sizeFormatted + ' • Đang kết nối...',
+          0,
+          activeDownloadDateFormatted,
+          false
+        );
         window.ChumNative.downloadAndInstall(app.download_url, app.name, app.cleanName, true);
         return;
       } catch (e) { /* fallback */ }
     }
 
     if (dom.btnDlCancel) dom.btnDlCancel.textContent = '✕ Đóng';
-    setDownloadBannerState('⬇️', app.cleanName, 'Tải ngay', (app.sizeFormatted ? app.sizeFormatted + ' • ' : '') + 'Trình duyệt đang tải xuống...', 100);
-    if (webDlHideTimer) clearTimeout(webDlHideTimer);
+    setDownloadBannerState(
+      '⬇️',
+      app.cleanName,
+      'Tải ngay',
+      (app.sizeFormatted ? app.sizeFormatted + ' • ' : '') + 'Trình duyệt đang tải xuống...',
+      100,
+      activeDownloadDateFormatted,
+      false
+    );
     webDlHideTimer = setTimeout(function () {
       if (!window.ChumNative && dom.dlBanner) dom.dlBanner.style.display = 'none';
-    }, 5000);
+    }, 6000);
 
     try {
       var a = document.createElement('a');
@@ -817,6 +919,8 @@
     if (!dom.dlBanner) return;
     var pct = Math.min(100, Math.max(0, Number(progress) || 0));
     var appTitle = cleanAppName(fileName);
+    var dateLbl = findAppDateLabel(fileName);
+    if (fileName) activeDownloadFileName = fileName;
 
     if (status === 'cancelled') {
       dom.dlBanner.style.display = 'none';
@@ -827,27 +931,60 @@
       showToast('❌ Tải thất bại: ' + status.slice(6));
       return;
     }
+    if (status === 'need_permission') {
+      if (dom.btnDlCancel) dom.btnDlCancel.textContent = '✕ Đóng';
+      setDownloadBannerState(
+        '⚠️',
+        'Cấp quyền cài đặt: ' + appTitle,
+        '100%',
+        'Bật Cho phép nguồn không xác định rồi bấm Cài đặt',
+        100,
+        dateLbl,
+        true
+      );
+      return;
+    }
     if (status === 'completed') {
-      setDownloadBannerState('⚡', 'Mở cài đặt: ' + appTitle, '100%', 'Hoàn tất • Đang mở trình cài đặt...', 100);
-      setTimeout(function () {
+      if (dom.btnDlCancel) dom.btnDlCancel.textContent = '✕ Đóng';
+      setDownloadBannerState(
+        '⚡',
+        'Đang mở bảng Cài đặt: ' + appTitle,
+        '100%',
+        'Tải xong • Bấm "⚡ Cài đặt" nếu hộp thoại chưa hiện',
+        100,
+        dateLbl,
+        true
+      );
+      if (webDlHideTimer) clearTimeout(webDlHideTimer);
+      webDlHideTimer = setTimeout(function () {
         if (dom.dlBanner) dom.dlBanner.style.display = 'none';
-      }, 3500);
-      showToast('⚡ Mở cài đặt: ' + appTitle);
+      }, 10000);
+      showToast('⚡ Đang mở bảng cài đặt: ' + appTitle);
       return;
     }
     if (status === 'extracting_xapk') {
-      setDownloadBannerState('📦', 'Đang giải nén: ' + appTitle, '100%', 'Đang chuẩn bị cài đặt gói XAPK...', 100);
+      setDownloadBannerState('📦', 'Đang giải nén: ' + appTitle, '100%', 'Đang chuẩn bị cài đặt gói XAPK...', 100, dateLbl, false);
       return;
     }
     if (status === 'connecting') {
-      setDownloadBannerState('🔗', 'Đang kết nối: ' + appTitle, '0%', 'Đang chuẩn bị tải...', 2);
+      if (dom.btnDlCancel) dom.btnDlCancel.textContent = '✕ Hủy';
+      setDownloadBannerState('🔗', 'Đang kết nối: ' + appTitle, '0%', 'Đang chuẩn bị tải...', 2, dateLbl, false);
       return;
     }
 
+    if (dom.btnDlCancel) dom.btnDlCancel.textContent = '✕ Hủy';
     var sizeText = (totalBytes > 0)
       ? (formatBytes(downloadedBytes) + ' / ' + formatBytes(totalBytes))
       : formatBytes(downloadedBytes);
-    setDownloadBannerState('⬇️', appTitle, pct + '%', formatSpeed(speedBps) + (sizeText ? ' • ' + sizeText : ''), pct);
+    setDownloadBannerState('⬇️', appTitle, pct + '%', formatSpeed(speedBps) + (sizeText ? ' • ' + sizeText : ''), pct, dateLbl, false);
+  };
+
+  window.onNativePackageChanged = function (pkgName, action) {
+    if (action === 'ADDED' || action === 'REPLACED') {
+      if (webDlHideTimer) clearTimeout(webDlHideTimer);
+      if (dom.dlBanner) dom.dlBanner.style.display = 'none';
+      showToast('✅ Đã cài đặt xong & tự dọn sạch file APK!');
+    }
   };
 
   window.onNativeDownloadComplete = function (fileName) {
@@ -875,12 +1012,13 @@
     }
     try {
       var selfInfo = JSON.parse(window.ChumNative.getSelfAppInfoJson() || '{}');
-      var assetTime = new Date(selfUpdateApp.updated_at || 0).getTime();
+      var assetTime = selfUpdateApp.timestampMs || parseIsoMs(selfUpdateApp.updated_at);
       var installedTime = selfInfo.lastUpdateTime || 0;
       if (assetTime > 0 && installedTime > 0 && assetTime > installedTime + 120000) {
         dom.selfUpdateBanner.style.display = 'flex';
         if (dom.selfUpdateMsg) {
-          dom.selfUpdateMsg.textContent = 'Đã có bản CHUM STORE mới (' + selfUpdateApp.dateFormatted + ' • ' + selfUpdateApp.sizeFormatted + ') trên kho!';
+          dom.selfUpdateMsg.innerHTML = 'Đã có bản CHUM STORE mới (<b style="color:var(--time-red-strong)">🕒 '
+            + selfUpdateApp.dateFormatted + '</b> • ' + selfUpdateApp.sizeFormatted + ') trên kho!';
         }
       } else {
         dom.selfUpdateBanner.style.display = 'none';
@@ -1311,13 +1449,20 @@
       });
     }
 
+    if (dom.btnDlInstall) {
+      dom.btnDlInstall.addEventListener('click', function () {
+        if (window.ChumNative && typeof window.ChumNative.installDownloadedFile === 'function' && activeDownloadFileName) {
+          window.ChumNative.installDownloadedFile(activeDownloadFileName, true);
+        }
+      });
+    }
+
     if (dom.btnDlCancel) {
       dom.btnDlCancel.addEventListener('click', function () {
         if (webDlHideTimer) clearTimeout(webDlHideTimer);
         if (dom.dlBanner) dom.dlBanner.style.display = 'none';
         if (window.ChumNative && typeof window.ChumNative.cancelDownload === 'function') {
           window.ChumNative.cancelDownload(activeDownloadFileName);
-          showToast('⏹️ Đã hủy tải ứng dụng.');
         }
       });
     }
